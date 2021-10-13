@@ -38,13 +38,14 @@ export default function DatasetDetailsView() {
     }
 
     const renderDocumentList = () => {
-        const d: { id: string }[] = dataset?.documents.map(d => {
+        const documents: { id: string }[] = dataset?.documents.map(d => {
             return {id: d};
         });
 
         return (
             <Table
-                dataSource={d}
+                rowKey={d => d.id}
+                dataSource={documents}
                 columns={[
                     {
                         title: 'Document Id',
@@ -57,6 +58,7 @@ export default function DatasetDetailsView() {
                         render: (documentId: string) => {
                             return (
                                 <Popconfirm
+                                    key={documentId}
                                     title={'Are you sure you want to delete this document?'}
                                     onConfirm={() => context.onRemoveDocuments(dataset, documentId)}
                                     okText='Yes'

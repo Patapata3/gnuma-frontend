@@ -12,7 +12,12 @@ import {
     removeDocumentsFromDataset,
     updateDataset
 } from '../../service/datasetService';
-import {defaultErrorMessage} from '../../util/presentation';
+import {
+    buildGenericCreate, buildGenericDeleteSingle, buildGenericFetchAll,
+    buildGenericFetchOne,
+    buildGenericUpdate,
+    defaultErrorMessage
+} from '../../util/presentation';
 import {GenericPayloadState} from '../../state/common/reducer';
 
 
@@ -50,94 +55,25 @@ type DatasetsContextProviderProps = {
 }
 
 const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
-    const [datasets, reducer] = useReducer(DatasetsReducer, initialState);
+    const [datasets, dispatch] = useReducer(DatasetsReducer, initialState);
 
-    const fetchOne = useCallback(async (datasetId: string) => {
-        try {
-            reducer({
-                type: 'START_FETCH'
-            });
-            const data = await getDataset(datasetId);
-            reducer({
-                type: 'SET_ONE',
-                payload: data
-            })
-        } catch (e) {
-            defaultErrorMessage(e);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
-
-    const fetchDatasets = useCallback(async () => {
-        try {
-            reducer({
-                type: 'START_FETCH'
-            });
-            const data = await getAllDatasets();
-            reducer({
-                type: 'SET_ALL',
-                payload: data
-            });
-        } catch (e) {
-            defaultErrorMessage(e);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
-
-    const deleteSingleDataset = useCallback(async (datasetId: string) => {
-        const messageKey = `delete-${datasetId}`;
-        try {
-            reducer({
-                type: 'START_FETCH'
-            });
-            message.loading({content: 'Deleting dataset...', key: messageKey});
-            await deleteDataset(datasetId);
-            reducer({
-                type: 'REMOVE_ONE',
-                id: datasetId
-            });
-            message.success({content: 'Dataset deleted.', key: messageKey});
-        } catch (e) {
-            defaultErrorMessage(e, messageKey);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
-
-    const createNewDataset = useCallback(async (dataset: Partial<Dataset>) => {
-        const messageKey = `create-${dataset.id}`;
-        try {
-            message.loading({content: 'Creating new dataset...', key: messageKey});
-            const newDataset = await createDataset(dataset);
-            reducer({
-                type: 'SET_ONE',
-                payload: newDataset
-            });
-            message.success({content: 'Dataset created.', key: messageKey});
-        } catch (e) {
-            defaultErrorMessage(e, messageKey);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
+    const fetchOne = buildGenericFetchOne(dispatch, getDataset);
+    const fetchAll = buildGenericFetchAll(dispatch, getAllDatasets);
+    const create = buildGenericCreate(dispatch, createDataset);
+    const deleteSingle = buildGenericDeleteSingle(dispatch, deleteDataset);
+    const update = buildGenericUpdate(dispatch, updateDataset);
 
     const removeDocuments = useCallback(async (dataset: Dataset, ...documentIds: string[]) => {
         const messageKey = `update-${documentIds}`;
         try {
             const updatedDataset = await removeDocumentsFromDataset(dataset, ...documentIds);
-            reducer({
+            dispatch({
                 type: 'SET_ONE',
                 payload: updatedDataset
             });
             message.success({content: 'Successfully patched dataset.', key: messageKey});
         } catch (e) {
-            reducer({
+            dispatch({
                 type: 'FAIL_FETCH'
             });
             defaultErrorMessage(e, messageKey);
@@ -153,33 +89,12 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
                 content: `Successfully updated dataset with ${addedDocuments.length} documents!`,
                 key: messageKey
             });
-            reducer({
+            dispatch({
                 type: 'SET_ONE',
                 payload: updatedDataset
             });
         } catch (e) {
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-            defaultErrorMessage(e, messageKey);
-        }
-    }, []);
-
-    const updateSingleDataset = useCallback(async (id: string, changes: Partial<Dataset>) => {
-        const messageKey = `update-${id}`;
-        try {
-            message.loading({content: 'Updating dataset...', key: messageKey});
-            const updatedDataset = await updateDataset(id, changes);
-            message.success({
-                content: `Successfully updated dataset!`,
-                key: messageKey
-            });
-            reducer({
-                type: 'SET_ONE',
-                payload: updatedDataset
-            });
-        } catch (e) {
-            reducer({
+            dispatch({
                 type: 'FAIL_FETCH'
             });
             defaultErrorMessage(e, messageKey);
@@ -188,11 +103,11 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
 
     const context: DatasetsContextType = {
         state: datasets,
-        onFetchAll: fetchDatasets,
+        onFetchAll: fetchAll,
         onFetchOne: fetchOne,
-        onCreate: createNewDataset,
-        onDelete: deleteSingleDataset,
-        onUpdate: updateSingleDataset,
+        onCreate: create,
+        onDelete: deleteSingle,
+        onUpdate: update,
         onRemoveDocuments: removeDocuments,
         onAddDocuments: addDocuments
     };

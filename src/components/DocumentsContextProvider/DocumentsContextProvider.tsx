@@ -1,6 +1,4 @@
-import React, {createContext, useCallback, useReducer} from 'react';
-
-import {message} from 'antd';
+import React, {createContext, useReducer} from 'react';
 
 import {
     createDocument,
@@ -10,7 +8,13 @@ import {
     updateDocument
 } from '../../service/documentService';
 
-import {defaultErrorMessage} from '../../util/presentation';
+import {
+    buildGenericCreate,
+    buildGenericDeleteSingle,
+    buildGenericFetchAll,
+    buildGenericFetchOne,
+    buildGenericUpdate
+} from '../../util/presentation';
 
 import DocumentsReducer, {Document, initialState} from '../../state/documents/reducer';
 import {GenericPayloadState} from '../../state/common/reducer';
@@ -46,108 +50,21 @@ type DocumentsContextProviderProps = {
 }
 
 const DocumentsContextProvider = (props: DocumentsContextProviderProps) => {
-    const [documents, reducer] = useReducer(DocumentsReducer, initialState);
+    const [documents, dispatch] = useReducer(DocumentsReducer, initialState);
 
-    const fetchOne = useCallback(async (documentId: string) => {
-        try {
-            reducer({
-                type: 'START_FETCH'
-            });
-            const data = await getSingleDocument(documentId);
-            reducer({
-                type: 'SET_ONE',
-                payload: data
-            })
-        } catch (e) {
-            defaultErrorMessage(e);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
-
-    const fetchAll = useCallback(async () => {
-        try {
-            reducer({
-                type: 'START_FETCH'
-            });
-            const data = await getAllDocuments();
-            reducer({
-                type: 'SET_ALL',
-                payload: data
-            });
-        } catch (e) {
-            defaultErrorMessage(e);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
-
-    const deleteSingleDocument = useCallback(async (documentId: string) => {
-        const messageKey = `delete-${documentId}`;
-        try {
-            reducer({
-                type: 'START_FETCH'
-            });
-            message.loading({content: 'Deleting document...', key: messageKey});
-            await deleteDocument(documentId);
-            reducer({
-                type: 'REMOVE_ONE',
-                id: documentId
-            });
-            message.success({content: 'Document deleted.', key: messageKey});
-        } catch (e) {
-            defaultErrorMessage(e, messageKey);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
-
-    const createNewDocument = useCallback(async (document: Partial<Document>) => {
-        const messageKey = `create-document`;
-        try {
-            message.loading({content: 'Creating new document...', key: messageKey});
-            const newDocument = await createDocument(document);
-            reducer({
-                type: 'SET_ONE',
-                payload: newDocument
-            });
-            message.success({content: 'Document created.', key: messageKey});
-        } catch (e) {
-            defaultErrorMessage(e, messageKey);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
-
-    const updateSingleDocument = useCallback(async (document: Document) => {
-        const messageKey = `update-${document.id}`;
-        try {
-            message.loading({content: 'Updating document...', key: messageKey});
-            const newDocument = await updateDocument(document);
-            reducer({
-                type: 'SET_ONE',
-                payload: newDocument
-            });
-            message.success({content: 'Document successfully updated.', key: messageKey});
-        } catch (e) {
-            defaultErrorMessage(e, messageKey);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
+    const fetchOne = buildGenericFetchOne(dispatch, getSingleDocument);
+    const fetchAll = buildGenericFetchAll(dispatch, getAllDocuments);
+    const create = buildGenericCreate(dispatch, createDocument);
+    const deleteSingle = buildGenericDeleteSingle(dispatch, deleteDocument);
+    const update = buildGenericUpdate(dispatch, updateDocument);
 
     const context: DocumentsContextType = {
         state: documents,
         onFetchAll: fetchAll,
         onFetchOne: fetchOne,
-        onCreate: createNewDocument,
-        onDelete: deleteSingleDocument,
-        onUpdate: updateSingleDocument
+        onCreate: create,
+        onUpdate: update,
+        onDelete: deleteSingle
     };
 
     return (

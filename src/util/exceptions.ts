@@ -6,6 +6,3 @@ export class RequestError extends Error {
         this.statusCode = code;
     }
 }
-
-export class ArgumentError extends Error {
-}

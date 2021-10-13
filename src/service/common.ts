@@ -1,5 +1,4 @@
-import {RequestError} from './exceptions';
-import {message} from 'antd';
+import {RequestError} from '../util/exceptions';
 
 export const checkResponse = (response: Response) => {
     if (response.status !== 200) {

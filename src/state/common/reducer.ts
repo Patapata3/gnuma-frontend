@@ -1,10 +1,13 @@
 import {GenericPayloadActions} from './actions';
+import {Reducer} from 'react';
 
 
 export type GenericPayloadState<T> = {
     loading: boolean;
     elements: { [key: string]: T };
 }
+
+export type GenericPayloadReducer<T> = Reducer<GenericPayloadState<T>, GenericPayloadActions<T>>;
 
 export function genericPayloadReducer<T extends { id: string }>(prevState: GenericPayloadState<T>, action: GenericPayloadActions<T>): GenericPayloadState<T> {
     switch (action.type) {

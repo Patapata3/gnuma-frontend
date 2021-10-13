@@ -1,15 +1,15 @@
-import React, {createContext, useCallback, useReducer} from 'react';
+import React, {createContext, useReducer} from 'react';
 
-import {defaultErrorMessage, missingProviderError} from '../../util/presentation';
+import {buildGenericFetchAll, buildGenericFetchOne, missingProviderError} from '../../util/presentation';
 import LogsReducer, {initialState, LogEntry} from '../../state/logs/reducer';
-import {getAllLogs} from '../../service/logService';
 import {GenericPayloadState} from '../../state/common/reducer';
+import {getAllLogEntries, getSingleLogEntry} from '../../service/logService';
 
 
 type LogsContextType = {
     state: GenericPayloadState<LogEntry>;
     onFetchAll: () => void;
-    onFetchOne: () => void;
+    onFetchOne: (id: string) => void;
 }
 
 export const LogsContext = createContext<LogsContextType>({
@@ -23,32 +23,15 @@ type LogsContextPropsType = {
 }
 
 const LogsContextProvider = (props: LogsContextPropsType) => {
-    const [logs, reducer] = useReducer(LogsReducer, initialState);
+    const [logs, dispatch] = useReducer(LogsReducer, initialState);
 
-    const fetchAll = useCallback(async () => {
-        try {
-            reducer({
-                type: 'START_FETCH'
-            });
-            const data = await getAllLogs();
-            reducer({
-                type: 'SET_ALL',
-                payload: data
-            });
-        } catch (e) {
-            defaultErrorMessage(e);
-            reducer({
-                type: 'FAIL_FETCH'
-            });
-        }
-    }, []);
+    const fetchOne = buildGenericFetchOne(dispatch, getSingleLogEntry);
+    const fetchAll = buildGenericFetchAll(dispatch, getAllLogEntries);
 
     const context: LogsContextType = {
         state: logs,
-        onFetchAll: () => {
-        },
-        onFetchOne: () => {
-        }
+        onFetchAll: fetchAll,
+        onFetchOne: fetchOne
     }
 
     return (

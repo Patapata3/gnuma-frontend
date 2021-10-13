@@ -18,6 +18,7 @@ import './App.css';
 import HomeView from './views/HomeView';
 import DatasetsContextProvider from './components/DatasetsContextProvider/DatasetsContextProvider';
 import DocumentsContextProvider from './components/DocumentsContextProvider/DocumentsContextProvider';
+import LogsContextProvider from './components/LogsContextProvider/LogsContextProvider';
 
 
 function App() {
@@ -88,23 +89,25 @@ function App() {
     return (
         <DatasetsContextProvider>
             <DocumentsContextProvider>
-                <Layout style={{minHeight: '100vh'}}>
-                    <Header
-                        style={{color: cyan.primary, fontSize: '1.25em'}}
-                    >
-                        GNUMA
-                    </Header>
-                    <Layout>
-                        <Sider>
-                            {renderMenu()}
-                        </Sider>
-                        <Content
-                            className={'gnuma-view'}
+                <LogsContextProvider>
+                    <Layout style={{minHeight: '100vh'}}>
+                        <Header
+                            style={{color: cyan.primary, fontSize: '1.25em'}}
                         >
-                            {renderContent()}
-                        </Content>
+                            GNUMA
+                        </Header>
+                        <Layout>
+                            <Sider>
+                                {renderMenu()}
+                            </Sider>
+                            <Content
+                                className={'gnuma-view'}
+                            >
+                                {renderContent()}
+                            </Content>
+                        </Layout>
                     </Layout>
-                </Layout>
+                </LogsContextProvider>
             </DocumentsContextProvider>
         </DatasetsContextProvider>
     );

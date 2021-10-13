@@ -38,8 +38,8 @@ export const createDocument = async (document: Partial<Document>): Promise<Docum
     return await getSingleDocument(data)
 }
 
-export const updateDocument = async (document: Document): Promise<Document> => {
-    const endpoint = getApiUrl(`documents/${document.id}`);
+export const updateDocument = async (documentId: string, document: Partial<Document>): Promise<Document> => {
+    const endpoint = getApiUrl(`documents/${documentId}`);
     const response = await fetch(endpoint, {
         method: 'PUT',
         headers: {
@@ -49,7 +49,7 @@ export const updateDocument = async (document: Document): Promise<Document> => {
     });
     checkResponse(response);
 
-    return await getSingleDocument(document.id);
+    return await getSingleDocument(documentId);
 }
 
 export const deleteDocument = async (id: string): Promise<void> => {

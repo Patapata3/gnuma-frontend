@@ -61,9 +61,10 @@ export default function DocumentsList(props: DocumentListProps) {
             align: 'right',
             render: (_, record) => {
                 return (
-                    <>
+                    <span key={`document-actions-${record.id}`}>
                         <Link
                             to={`/documents/${record.id}/`}
+                            key={`edit-document-${record.id}`}
                         >
                             <Button
                                 icon={<EditOutlined/>}
@@ -74,6 +75,7 @@ export default function DocumentsList(props: DocumentListProps) {
                         <Popconfirm
                             title={`Delete document?`}
                             onConfirm={() => context.onDelete(record.id)}
+                            key={`delete-document-${record.id}`}
                         >
                             <Button
                                 icon={<DeleteOutlined/>}
@@ -82,7 +84,7 @@ export default function DocumentsList(props: DocumentListProps) {
                                 shape={'round'}
                             />
                         </Popconfirm>
-                    </>
+                    </span>
                 );
             }
         }
@@ -108,7 +110,7 @@ export default function DocumentsList(props: DocumentListProps) {
 
     return (
         <Table
-            rowKey={'id'}
+            rowKey={(r) => r.id}
             columns={visibleColumns.map((col) => columns[col])}
             rowSelection={rowSelection()}
             dataSource={documents}
