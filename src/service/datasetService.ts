@@ -17,7 +17,7 @@ export const getAllDatasets = async (): Promise<Dataset[]> => {
 }
 
 export const removeDocumentsFromDataset = async (dataset: Dataset, ...documents: string[]): Promise<Dataset> => {
-    const filteredDocuments = dataset.documents.filter((documentId) => documents.includes(documentId))
+    const filteredDocuments = dataset.documents.filter((documentId) => !documents.includes(documentId))
     const changes = {
         documents: filteredDocuments
     };
@@ -43,7 +43,10 @@ export const createDataset = async (dataset: Partial<Dataset>): Promise<Dataset>
     checkResponse(createResponse);
     const data = await createResponse.json();
     const datasetId = data['dataset'];
-    return await getDataset(datasetId);
+    const getEndpoint = getApiUrl(datasetId);
+    const response = await fetch(getEndpoint);
+    checkResponse(response);
+    return await response.json();
 }
 
 export const deleteDataset = async (id: string): Promise<void> => {

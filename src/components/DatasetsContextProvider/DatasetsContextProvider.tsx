@@ -2,7 +2,7 @@ import React, {createContext, useCallback, useReducer} from 'react';
 
 import {message} from 'antd';
 
-import DatasetsReducer, {Dataset, DatasetsState, initialState} from '../../state/datasets/reducer';
+import DatasetsReducer, {Dataset, initialState} from '../../state/datasets/reducer';
 import {
     addDocumentsToDataset,
     createDataset,
@@ -13,9 +13,11 @@ import {
     updateDataset
 } from '../../service/datasetService';
 import {defaultErrorMessage} from '../../util/presentation';
+import {GenericPayloadState} from '../../state/common/reducer';
+
 
 type DatasetsContextType = {
-    state: DatasetsState;
+    state: GenericPayloadState<Dataset>;
     onFetchAll: () => void;
     onFetchOne: (datasetId: string) => void;
     onCreate: (dataset: Partial<Dataset>) => void;
@@ -58,7 +60,7 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
             const data = await getDataset(datasetId);
             reducer({
                 type: 'SET_ONE',
-                dataset: data
+                payload: data
             })
         } catch (e) {
             defaultErrorMessage(e);
@@ -76,7 +78,7 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
             const data = await getAllDatasets();
             reducer({
                 type: 'SET_ALL',
-                datasets: data
+                payload: data
             });
         } catch (e) {
             defaultErrorMessage(e);
@@ -96,7 +98,7 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
             await deleteDataset(datasetId);
             reducer({
                 type: 'REMOVE_ONE',
-                datasetId: datasetId
+                id: datasetId
             });
             message.success({content: 'Dataset deleted.', key: messageKey});
         } catch (e) {
@@ -114,7 +116,7 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
             const newDataset = await createDataset(dataset);
             reducer({
                 type: 'SET_ONE',
-                dataset: newDataset
+                payload: newDataset
             });
             message.success({content: 'Dataset created.', key: messageKey});
         } catch (e) {
@@ -131,7 +133,7 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
             const updatedDataset = await removeDocumentsFromDataset(dataset, ...documentIds);
             reducer({
                 type: 'SET_ONE',
-                dataset: updatedDataset
+                payload: updatedDataset
             });
             message.success({content: 'Successfully patched dataset.', key: messageKey});
         } catch (e) {
@@ -153,7 +155,7 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
             });
             reducer({
                 type: 'SET_ONE',
-                dataset: updatedDataset
+                payload: updatedDataset
             });
         } catch (e) {
             reducer({
@@ -174,7 +176,7 @@ const DatasetsContextProvider = (props: DatasetsContextProviderProps) => {
             });
             reducer({
                 type: 'SET_ONE',
-                dataset: updatedDataset
+                payload: updatedDataset
             });
         } catch (e) {
             reducer({

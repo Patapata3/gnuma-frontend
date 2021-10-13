@@ -12,10 +12,12 @@ import {
 
 import {defaultErrorMessage} from '../../util/presentation';
 
-import DocumentsReducer, {Document, DocumentsState, initialState} from '../../state/documents/reducer';
+import DocumentsReducer, {Document, initialState} from '../../state/documents/reducer';
+import {GenericPayloadState} from '../../state/common/reducer';
+
 
 type DocumentsContextType = {
-    state: DocumentsState;
+    state: GenericPayloadState<Document>;
     onFetchAll: () => void;
     onFetchOne: (documentId: string) => void;
     onCreate: (document: Partial<Document>) => void;
@@ -54,7 +56,7 @@ const DocumentsContextProvider = (props: DocumentsContextProviderProps) => {
             const data = await getSingleDocument(documentId);
             reducer({
                 type: 'SET_ONE',
-                document: data
+                payload: data
             })
         } catch (e) {
             defaultErrorMessage(e);
@@ -72,7 +74,7 @@ const DocumentsContextProvider = (props: DocumentsContextProviderProps) => {
             const data = await getAllDocuments();
             reducer({
                 type: 'SET_ALL',
-                documents: data
+                payload: data
             });
         } catch (e) {
             defaultErrorMessage(e);
@@ -92,7 +94,7 @@ const DocumentsContextProvider = (props: DocumentsContextProviderProps) => {
             await deleteDocument(documentId);
             reducer({
                 type: 'REMOVE_ONE',
-                documentId: documentId
+                id: documentId
             });
             message.success({content: 'Document deleted.', key: messageKey});
         } catch (e) {
@@ -110,7 +112,7 @@ const DocumentsContextProvider = (props: DocumentsContextProviderProps) => {
             const newDocument = await createDocument(document);
             reducer({
                 type: 'SET_ONE',
-                document: newDocument
+                payload: newDocument
             });
             message.success({content: 'Document created.', key: messageKey});
         } catch (e) {
@@ -128,7 +130,7 @@ const DocumentsContextProvider = (props: DocumentsContextProviderProps) => {
             const newDocument = await updateDocument(document);
             reducer({
                 type: 'SET_ONE',
-                document: newDocument
+                payload: newDocument
             });
             message.success({content: 'Document successfully updated.', key: messageKey});
         } catch (e) {

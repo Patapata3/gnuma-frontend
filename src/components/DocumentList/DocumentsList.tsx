@@ -2,7 +2,7 @@ import React, {useContext, useEffect} from 'react';
 
 import {Link} from 'react-router-dom';
 
-import {Button, Popconfirm, Popover, Table, TableColumnProps} from 'antd';
+import {Button, Popconfirm, Table, TableColumnProps} from 'antd';
 import {TableRowSelection} from 'antd/es/table/interface';
 import {DeleteOutlined, EditOutlined} from '@ant-design/icons';
 
@@ -104,7 +104,7 @@ export default function DocumentsList(props: DocumentListProps) {
         }
     }
 
-    const documents = Object.values(context.state.documents);
+    const documents = Object.values(context.state.elements);
 
     return (
         <Table

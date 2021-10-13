@@ -24,7 +24,7 @@ export default function DatasetDetailsView() {
         context.onFetchOne(id);
     }, [id]);
 
-    const dataset = context.state.datasets[id];
+    const dataset = context.state.elements[id];
 
     useEffect(() => {
         setDescription(dataset?.description);
@@ -53,6 +53,7 @@ export default function DatasetDetailsView() {
                     {
                         title: 'Actions',
                         dataIndex: 'id',
+                        align: 'right',
                         render: (documentId: string) => {
                             return (
                                 <Popconfirm

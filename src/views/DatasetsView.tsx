@@ -41,7 +41,7 @@ export default function DatasetsView() {
         )
     }
 
-    const datasets = Object.values(context.state.datasets);
+    const datasets = Object.values(context.state.elements);
 
     return (
         <div key={'datasets-view'}>

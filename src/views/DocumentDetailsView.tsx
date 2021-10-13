@@ -12,7 +12,7 @@ export default function DocumentDetailsView() {
     const {id} = useParams<{ id: string }>();
     const history = useHistory();
     const context = useContext(DocumentsContext);
-    const document = context.state.documents[id];
+    const document = context.state.elements[id];
 
     const [changedDocument, setChangedDocument] = useState<Document>();
 
