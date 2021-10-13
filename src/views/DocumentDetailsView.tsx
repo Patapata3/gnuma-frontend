@@ -37,7 +37,7 @@ export default function DocumentDetailsView() {
         if (!changedDocument) {
             return;
         }
-        context.onUpdate(changedDocument);
+        context.onUpdate(changedDocument.id, changedDocument);
     }
 
     const render = () => {

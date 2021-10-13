@@ -43,7 +43,7 @@ export function buildGenericCreate<T>(dispatch: Dispatch<GenericPayloadActions<T
 }
 
 export function buildGenericUpdate<T>(dispatch: Dispatch<GenericPayloadActions<T>>, updater: (id: string, changes: Partial<T>) => Promise<T>) {
-    return () => async (id: string, changes: Partial<T>) => {
+    return async (id: string, changes: Partial<T>) => {
         const messageKey = `update-${id}`;
         try {
             message.loading({content: 'Updating...', key: messageKey});

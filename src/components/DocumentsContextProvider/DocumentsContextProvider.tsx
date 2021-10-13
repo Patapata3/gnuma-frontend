@@ -26,7 +26,7 @@ type DocumentsContextType = {
     onFetchOne: (documentId: string) => void;
     onCreate: (document: Partial<Document>) => void;
     onDelete: (documentId: string) => void;
-    onUpdate: (document: Document) => void;
+    onUpdate: (id: string, changes: Partial<Document>) => void;
 }
 
 const missingProviderError = (name: string) => {
