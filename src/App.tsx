@@ -6,7 +6,7 @@ import {CSSTransition, TransitionGroup} from 'react-transition-group';
 
 import {Layout, Menu} from 'antd';
 import {CopyOutlined, FileTextOutlined, HomeOutlined} from '@ant-design/icons';
-import {cyan} from '@ant-design/colors';
+import {volcano as color} from '@ant-design/colors';
 
 import DatasetsView from './views/DatasetsView';
 import DatasetDetailsView from './views/DatasetDetailsView';
@@ -91,9 +91,7 @@ function App() {
             <DocumentsContextProvider>
                 <LogsContextProvider>
                     <Layout style={{minHeight: '100vh'}}>
-                        <Header
-                            style={{color: cyan.primary, fontSize: '1.25em'}}
-                        >
+                        <Header style={{color: color.primary, fontSize: '1.25em'}}>
                             GNUMA
                         </Header>
                         <Layout>
