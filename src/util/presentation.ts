@@ -85,6 +85,28 @@ export function buildGenericFetchOne<T>(dispatch: Dispatch<GenericPayloadActions
     }
 }
 
+export function buildGenericFetchSome<T>(dispatch: Dispatch<GenericPayloadActions<T>>, fetcher: (id: string) => Promise<T>) {
+    return async (ids: string[]) => {
+        try {
+            dispatch({
+                type: 'START_FETCH'
+            });
+            const data = await Promise.all(ids.map((id) => {
+                return fetcher(id);
+            }));
+            dispatch({
+                type: 'SET_SOME',
+                payload: data
+            })
+        } catch (e) {
+            defaultErrorMessage(e);
+            dispatch({
+                type: 'FAIL_FETCH'
+            });
+        }
+    }
+}
+
 export function buildGenericFetchAll<T>(dispatch: Dispatch<GenericPayloadActions<T>>, fetcher: () => Promise<T[]>) {
     return async () => {
         try {

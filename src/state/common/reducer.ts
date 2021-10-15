@@ -32,12 +32,21 @@ export function genericPayloadReducer<T extends { id: string }>(prevState: Gener
                 loading: false
             };
         case 'SET_ONE':
-            const addedState = {
+            const addedOneState = {
                 ...prevState,
                 loading: false
             };
-            addedState.elements[action.payload.id] = action.payload;
-            return addedState;
+            addedOneState.elements[action.payload.id] = action.payload;
+            return addedOneState;
+        case 'SET_SOME':
+            const addedSomeState = {
+                ...prevState,
+                loading: false
+            };
+            action.payload.forEach((element) => {
+                addedSomeState.elements[element.id] = element;
+            });
+            return addedSomeState;
         case 'REMOVE_ONE':
             const removedState = {
                 ...prevState,

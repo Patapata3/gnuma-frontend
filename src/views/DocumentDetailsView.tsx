@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 
 import {Link, useHistory, useParams} from 'react-router-dom';
 
-import {Button, Form, Input, PageHeader} from 'antd';
+import {Button, Card, Form, Input, PageHeader} from 'antd';
 
 import {Document} from '../state/documents/reducer';
 import {DocumentsContext} from '../components/DocumentsContextProvider/DocumentsContextProvider';
@@ -113,7 +113,11 @@ export default function DocumentDetailsView() {
                 onBack={() => history.push('/documents')}
                 title={'Document Details'}
             />
-            {render()}
+            <Card
+                title={'Document data'}
+            >
+                {render()}
+            </Card>
         </div>
     );
 }

@@ -12,7 +12,7 @@ import {
     buildGenericCreate,
     buildGenericDeleteSingle,
     buildGenericFetchAll,
-    buildGenericFetchOne,
+    buildGenericFetchOne, buildGenericFetchSome,
     buildGenericUpdate
 } from '../../util/presentation';
 
@@ -23,6 +23,7 @@ import {GenericPayloadState} from '../../state/common/reducer';
 type DocumentsContextType = {
     state: GenericPayloadState<Document>;
     onFetchAll: () => void;
+    onFetchSome: (documentIds: string[]) => void;
     onFetchOne: (documentId: string) => void;
     onCreate: (document: Partial<Document>) => void;
     onDelete: (documentId: string) => void;
@@ -39,6 +40,7 @@ const missingProviderError = (name: string) => {
 export const DocumentsContext = createContext<DocumentsContextType>({
     state: initialState,
     onFetchAll: missingProviderError('onFetchAll'),
+    onFetchSome: missingProviderError('onFetchSome'),
     onFetchOne: missingProviderError('onFetchOne'),
     onCreate: missingProviderError('onCreate'),
     onDelete: missingProviderError('onDelete'),
@@ -53,6 +55,7 @@ const DocumentsContextProvider = (props: DocumentsContextProviderProps) => {
     const [documents, dispatch] = useReducer(DocumentsReducer, initialState);
 
     const fetchOne = buildGenericFetchOne(dispatch, getSingleDocument);
+    const fetchSome = buildGenericFetchSome(dispatch, getSingleDocument);
     const fetchAll = buildGenericFetchAll(dispatch, getAllDocuments);
     const create = buildGenericCreate(dispatch, createDocument);
     const deleteSingle = buildGenericDeleteSingle(dispatch, deleteDocument);
@@ -61,6 +64,7 @@ const DocumentsContextProvider = (props: DocumentsContextProviderProps) => {
     const context: DocumentsContextType = {
         state: documents,
         onFetchAll: fetchAll,
+        onFetchSome: fetchSome,
         onFetchOne: fetchOne,
         onCreate: create,
         onUpdate: update,

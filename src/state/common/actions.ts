@@ -16,6 +16,11 @@ export interface SetOneAction<T> {
     payload: T;
 }
 
+export interface SetSomeAction<T> {
+    type: 'SET_SOME';
+    payload: T[];
+}
+
 export interface RemoveOneAction {
     type: 'REMOVE_ONE';
     id: string;
@@ -31,5 +36,6 @@ export type GenericPayloadActions<T> =
     | FailFetchAction
     | SetAllAction<T>
     | SetOneAction<T>
+    | SetSomeAction<T>
     | RemoveOneAction
     | RemoveAllAction;
