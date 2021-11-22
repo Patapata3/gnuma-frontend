@@ -5,7 +5,7 @@ import {Link, Route, Switch, useLocation} from 'react-router-dom';
 import {CSSTransition, TransitionGroup} from 'react-transition-group';
 
 import {Layout, Menu} from 'antd';
-import {CopyOutlined, FileTextOutlined, HomeOutlined} from '@ant-design/icons';
+import {CopyOutlined, FileTextOutlined, HomeOutlined, SettingOutlined} from '@ant-design/icons';
 import {volcano as color} from '@ant-design/colors';
 
 import DatasetsView from './views/DatasetsView';
@@ -19,6 +19,7 @@ import HomeView from './views/HomeView';
 import DatasetsContextProvider from './components/DatasetsContextProvider/DatasetsContextProvider';
 import DocumentsContextProvider from './components/DocumentsContextProvider/DocumentsContextProvider';
 import LogsContextProvider from './components/LogsContextProvider/LogsContextProvider';
+import DebugConfigView from './views/DebugConfigView';
 
 
 function App() {
@@ -46,6 +47,12 @@ function App() {
                     icon={<CopyOutlined/>}
                 >
                     <Link to='/datasets/'>Datasets</Link>
+                </Menu.Item>
+                <Menu.Item
+                    key={'/debug/configuration/'}
+                    icon={<SettingOutlined/>}
+                >
+                    <Link to='/debug/configuration/'>Configuration Tests</Link>
                 </Menu.Item>
             </Menu>
         );
@@ -75,6 +82,10 @@ function App() {
                         </Route>
                         <Route exact path='/documents/'>
                             <DocumentsView key='documents-view'/>
+                        </Route>
+
+                        <Route exact path='/debug/configuration/'>
+                            <DebugConfigView key='debug-configuration-view'/>
                         </Route>
 
                         <Route exact path='/'>

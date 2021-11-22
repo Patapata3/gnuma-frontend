@@ -5,6 +5,7 @@ import {GenericPayloadActions} from '../common/actions';
 
 export type LogEntry = {
     id: string;
+    timestamp: string;
     message: string;
     level: 'INFO' | 'DEBUG' | 'WARN' | 'ERROR' | 'FATAL';
     stack?: string;
