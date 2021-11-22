@@ -34,10 +34,10 @@ export function buildGenericCreate<T>(dispatch: Dispatch<GenericPayloadActions<T
             });
             message.success({content: 'Creation successful!', key: messageKey});
         } catch (e) {
-            defaultErrorMessage(e, messageKey);
             dispatch({
                 type: 'FAIL_FETCH'
             });
+            defaultErrorMessage(e, messageKey);
         }
     }
 }
@@ -77,10 +77,10 @@ export function buildGenericFetchOne<T>(dispatch: Dispatch<GenericPayloadActions
                 payload: data
             })
         } catch (e) {
-            defaultErrorMessage(e);
             dispatch({
                 type: 'FAIL_FETCH'
             });
+            defaultErrorMessage(e);
         }
     }
 }
@@ -99,10 +99,10 @@ export function buildGenericFetchSome<T>(dispatch: Dispatch<GenericPayloadAction
                 payload: data
             })
         } catch (e) {
-            defaultErrorMessage(e);
             dispatch({
                 type: 'FAIL_FETCH'
             });
+            defaultErrorMessage(e);
         }
     }
 }
@@ -119,10 +119,10 @@ export function buildGenericFetchAll<T>(dispatch: Dispatch<GenericPayloadActions
                 payload: data
             });
         } catch (e) {
-            defaultErrorMessage(e);
             dispatch({
                 type: 'FAIL_FETCH'
             });
+            defaultErrorMessage(e);
         }
     }
 }
@@ -142,10 +142,10 @@ export function buildGenericDeleteSingle<T>(dispatch: Dispatch<GenericPayloadAct
             });
             message.success({content: 'Deletion successful.', key: messageKey});
         } catch (e) {
-            defaultErrorMessage(e, messageKey);
             dispatch({
                 type: 'FAIL_FETCH'
             });
+            defaultErrorMessage(e, messageKey);
         }
     }
 }

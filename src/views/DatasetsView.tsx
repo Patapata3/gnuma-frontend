@@ -70,7 +70,8 @@ export default function DatasetsView() {
                     columns={[
                         {
                             title: 'Name',
-                            dataIndex: 'name'
+                            dataIndex: 'name',
+                            render: (_, record) => <Link to={`/datasets/${record.id}`}>{record.name}</Link>
                         },
                         {
                             title: 'Documents',
