@@ -2,9 +2,9 @@ import React, {useContext, useEffect, useState} from 'react';
 
 import {Link, useHistory, useParams} from 'react-router-dom';
 
-import {Button, Card, Form, Input, PageHeader} from 'antd';
+import {Button, Card, Form, Input, PageHeader, Table, TableColumnsType, TableColumnType} from 'antd';
 
-import {Document} from '../state/documents/reducer';
+import {Document, Sentence, Token} from '../state/documents/reducer';
 import {DocumentsContext} from '../components/DocumentsContextProvider/DocumentsContextProvider';
 
 
@@ -40,6 +40,37 @@ export default function DocumentDetailsView() {
         context.onUpdate(changedDocument.id, changedDocument);
     }
 
+    const renderSentences = () => {
+        const buildMetaColumnsForSentence = (sentence: Sentence) => {
+            let metaColumns: TableColumnsType<Token> = [];
+            if (sentence.tokens.length > 0) {
+                const token = sentence.tokens[0];
+                metaColumns = Object.keys(token.metaTags).map((tagName: string): TableColumnType<Token> => {
+                    return {
+                        title: tagName,
+                        dataIndex: tagName
+                    };
+                });
+            }
+            return metaColumns;
+        }
+
+        return document.sentences.map(sentence => {
+            const metaColumns = buildMetaColumnsForSentence(sentence);
+            return (
+                <Table
+                    key={sentence.id}
+                    dataSource={sentence.tokens}
+                    columns={[
+                        {dataIndex: 'token', title: 'Token'},
+                        {dataIndex: 'nerTag', title: 'NER-Tag'},
+                        ...metaColumns
+                    ]}
+                />
+            );
+        });
+    }
+
     const render = () => {
         return (
             <Form
@@ -70,17 +101,11 @@ export default function DocumentDetailsView() {
                     />
                 </Form.Item>
 
-                {/*<Form.Item*/}
-                {/*    label={'Text'}*/}
-                {/*>*/}
-                {/*    <Input.TextArea*/}
-                {/*        disabled={context.state.loading}*/}
-                {/*        value={changedDocument?.text}*/}
-                {/*        onChange={(e) => {*/}
-                {/*            documentChangedHandler({text: e.target.value})*/}
-                {/*        }}*/}
-                {/*    />*/}
-                {/*</Form.Item>*/}
+                <Form.Item
+                    label={'Text'}
+                >
+                    {renderSentences()}
+                </Form.Item>
 
                 <Form.Item
                     wrapperCol={{offset: 8, span: 8}}
