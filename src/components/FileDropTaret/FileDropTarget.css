@@ -1,0 +1,13 @@
+.dropzone {
+    border: dotted 2px lightgrey;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+
+    transition: all .2s;
+}
+
+.dropzone-active {
+    border-color: #1890ff;
+    transition: all .2s;
+}

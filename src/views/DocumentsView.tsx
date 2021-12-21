@@ -1,14 +1,17 @@
-import React, {useContext} from 'react';
+import React from 'react';
 
-import {Button, Card} from 'antd';
+import {Button, Card, Divider, Modal, Table} from 'antd';
 import {PlusOutlined} from '@ant-design/icons';
 
 import DocumentsList from '../components/DocumentList/DocumentsList';
 import {DocumentsContext} from '../components/DocumentsContextProvider/DocumentsContextProvider';
+import FileDropTarget from '../components/FileDropTaret/FileDropTarget';
 
 
 export default function DocumentsView() {
-    const context = useContext(DocumentsContext);
+    const context = React.useContext(DocumentsContext);
+    const [modalVisible, setModalVisible] = React.useState(false);
+    const [files, setFiles] = React.useState<File[]>([])
 
     return (
         <div key={'documents-view'}>
@@ -18,37 +21,36 @@ export default function DocumentsView() {
                     <Button
                         type={'primary'}
                         icon={<PlusOutlined/>}
-                        onClick={() => {
-                            const createWord = (size: number = 10) => {
-                                const chars = "abcdefghicjklmnopqrstuvwxyz";
-                                return [...Array(Math.floor(Math.random() * size))]
-                                    .map(() => {
-                                        return chars[Math.floor(Math.random() * chars.length)];
-                                    })
-                                    .join('');
-                            }
-
-                            const createSentence = (size: number = 50) => {
-                                return [...Array(Math.floor(Math.random() * size))]
-                                    .map(createWord)
-                                    .join(' ');
-                            }
-                            context.onCreate({
-                                source: createWord(10),
-                                domain: createWord(10),
-                                sentences: [],
-                                augmented: false,
-                                citationInformation: '',
-                                contributor: '',
-                                dataFields: [],
-                                tasks: []
-                            })
-                        }}
+                        onClick={() => setModalVisible(true)}
                     >
                         New
                     </Button>
                 }
             >
+                <Modal
+                    visible={modalVisible}
+                    onOk={() => setModalVisible(false)}
+                    onCancel={() => {
+                        setModalVisible(false);
+                        setFiles([]);
+                    }}
+                    okText={'Upload'}
+                    title={'Upload files'}
+                >
+                    <FileDropTarget
+                        onFilesDropped={(fs) => setFiles([...files, ...fs])}
+                    />
+                    <Divider type={'horizontal'} />
+                    <Table
+                        dataSource={files}
+                        columns={[
+                            {title: 'File', dataIndex: 'name'}
+                        ]}
+                        pagination={{
+                            pageSize: 5
+                        }}
+                    />
+                </Modal>
                 <DocumentsList showActions={true}/>
             </Card>
         </div>
