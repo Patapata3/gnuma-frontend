@@ -70,17 +70,17 @@ export default function DocumentDetailsView() {
                     />
                 </Form.Item>
 
-                <Form.Item
-                    label={'Text'}
-                >
-                    <Input.TextArea
-                        disabled={context.state.loading}
-                        value={changedDocument?.text}
-                        onChange={(e) => {
-                            documentChangedHandler({text: e.target.value})
-                        }}
-                    />
-                </Form.Item>
+                {/*<Form.Item*/}
+                {/*    label={'Text'}*/}
+                {/*>*/}
+                {/*    <Input.TextArea*/}
+                {/*        disabled={context.state.loading}*/}
+                {/*        value={changedDocument?.text}*/}
+                {/*        onChange={(e) => {*/}
+                {/*            documentChangedHandler({text: e.target.value})*/}
+                {/*        }}*/}
+                {/*    />*/}
+                {/*</Form.Item>*/}
 
                 <Form.Item
                     wrapperCol={{offset: 8, span: 8}}

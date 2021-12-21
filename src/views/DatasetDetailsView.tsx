@@ -45,11 +45,7 @@ export default function DatasetDetailsView() {
     const renderDocumentTitle = (documentId: string) => {
         const document = documentContext.state.elements[documentId];
         if(document) {
-            let text = document.text;
-            if (text.length > 15) {
-                text = text.substr(0, 12) + '...';
-            }
-            return text;
+            return document.id;
         }
         return <Skeleton active loading />
     }

@@ -16,7 +16,7 @@ import {
     buildGenericUpdate
 } from '../../util/presentation';
 
-import DocumentsReducer, {Document, initialState} from '../../state/documents/reducer';
+import DocumentsReducer, {Document, initialState, UnPersistedDocument} from '../../state/documents/reducer';
 import {GenericPayloadState} from '../../state/common/reducer';
 
 
@@ -25,7 +25,7 @@ type DocumentsContextType = {
     onFetchAll: () => void;
     onFetchSome: (documentIds: string[]) => void;
     onFetchOne: (documentId: string) => void;
-    onCreate: (document: Partial<Document>) => void;
+    onCreate: (document: UnPersistedDocument) => void;
     onDelete: (documentId: string) => void;
     onUpdate: (id: string, changes: Partial<Document>) => void;
 }

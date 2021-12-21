@@ -34,9 +34,14 @@ export default function DocumentsView() {
                                     .join(' ');
                             }
                             context.onCreate({
-                                'source': createWord(10),
-                                'domain': createWord(10),
-                                'text': createSentence(100)
+                                source: createWord(10),
+                                domain: createWord(10),
+                                sentences: [],
+                                augmented: false,
+                                citationInformation: '',
+                                contributor: '',
+                                dataFields: [],
+                                tasks: []
                             })
                         }}
                     >
