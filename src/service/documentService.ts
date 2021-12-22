@@ -25,12 +25,28 @@ export const getSingleDocument = async (id: string): Promise<Document> => {
 
 export const createDocument = async (document: UnPersistedDocument): Promise<Document> => {
     const endpoint = getApiUrl('documents/');
+
+    const formData = new FormData();
+    formData.append('domain', document.domain);
+    formData.append('source', document.source);
+    formData.append('contributor', document.contributor);
+    formData.append('citationInformation', document.citationInformation);
+    formData.append('augmented', document.augmented ? 'true' : 'false');
+    formData.append('tasks', document.tasks.join(', '));
+    formData.append('dataFields', '');
+
+    if(document.rootDocument) {
+        formData.append('rootDocument', document.rootDocument);
+    }
+
+    formData.append('data', document.data, )
+
     const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'multipart/form-data'
         },
-        body: JSON.stringify(document)
+        body: formData
     });
     checkResponse(response);
 
