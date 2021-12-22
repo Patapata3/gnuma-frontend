@@ -25,7 +25,7 @@ type DocumentsContextType = {
     onFetchAll: () => void;
     onFetchSome: (documentIds: string[]) => void;
     onFetchOne: (documentId: string) => void;
-    onCreate: (document: UnPersistedDocument) => void;
+    onCreate: (document: UnPersistedDocument) => Promise<void>;
     onDelete: (documentId: string) => void;
     onUpdate: (id: string, changes: Partial<Document>) => void;
 }
@@ -37,12 +37,19 @@ const missingProviderError = (name: string) => {
     }
 }
 
+const asyncMissingProviderError = (name: string) => {
+    return async () => {
+        console.error(`Context callback "${name}" not available, did you forget to wrap ` +
+            'your top level view into a DocumentsContextProvider?');
+    }
+}
+
 export const DocumentsContext = createContext<DocumentsContextType>({
     state: initialState,
     onFetchAll: missingProviderError('onFetchAll'),
     onFetchSome: missingProviderError('onFetchSome'),
     onFetchOne: missingProviderError('onFetchOne'),
-    onCreate: missingProviderError('onCreate'),
+    onCreate: asyncMissingProviderError('onCreate'),
     onDelete: missingProviderError('onDelete'),
     onUpdate: missingProviderError('onUpdate')
 });

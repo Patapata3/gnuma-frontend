@@ -11,7 +11,33 @@ import FileDropTarget from '../components/FileDropTaret/FileDropTarget';
 export default function DocumentsView() {
     const context = React.useContext(DocumentsContext);
     const [modalVisible, setModalVisible] = React.useState(false);
-    const [files, setFiles] = React.useState<File[]>([])
+    const [files, setFiles] = React.useState<File[]>([]);
+
+    const cancelUpload = async () => {
+        setModalVisible(false);
+        setFiles([]);
+    }
+
+    const executeUpload = async () => {
+        setModalVisible(false);
+
+        const uploadPromises = files.map(async (f) => {
+            return context.onCreate({
+                tasks: [],
+                dataFields: [],
+                contributor: '',
+                citationInformation: '',
+                augmented: false,
+                data: f,
+                domain: '',
+                source: ''
+            });
+        });
+
+        await Promise.all(uploadPromises);
+
+        setFiles([]);
+    }
 
     return (
         <div key={'documents-view'}>
@@ -29,18 +55,15 @@ export default function DocumentsView() {
             >
                 <Modal
                     visible={modalVisible}
-                    onOk={() => setModalVisible(false)}
-                    onCancel={() => {
-                        setModalVisible(false);
-                        setFiles([]);
-                    }}
+                    onOk={executeUpload}
+                    onCancel={cancelUpload}
                     okText={'Upload'}
                     title={'Upload files'}
                 >
                     <FileDropTarget
                         onFilesDropped={(fs) => setFiles([...files, ...fs])}
                     />
-                    <Divider type={'horizontal'} />
+                    <Divider type={'horizontal'}/>
                     <Table
                         dataSource={files}
                         columns={[

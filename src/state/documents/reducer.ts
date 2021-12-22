@@ -42,7 +42,7 @@ export type UnPersistedDocument = {
     citationInformation: string;
     dataFields: DataField[];
     tasks: string[];
-    sentences: Sentence[];
+    data: File;
     augmented: boolean;
     rootDocument?: string;
 }

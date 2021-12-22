@@ -22,8 +22,8 @@ export const defaultErrorMessage = (e: any, messageKey?: string) => {
     }
 }
 
-export function buildGenericCreate<T>(dispatch: Dispatch<GenericPayloadActions<T>>, creator: (payload: Partial<T>) => Promise<T>) {
-    return async (payload: Partial<T>) => {
+export function buildGenericCreate<T, P>(dispatch: Dispatch<GenericPayloadActions<T>>, creator: (payload: P) => Promise<T>) {
+    return async (payload: P) => {
         const messageKey = `generic-create-${uuidv4()}`;
         try {
             message.loading({content: 'Creating...', key: messageKey});
