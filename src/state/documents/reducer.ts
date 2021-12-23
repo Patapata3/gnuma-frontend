@@ -18,7 +18,8 @@ export type Sentence = {
 }
 
 export type DataField = {
-
+    name: string;
+    description: string;
 }
 
 export type Document = {
@@ -45,6 +46,8 @@ export type UnPersistedDocument = {
     data: File;
     augmented: boolean;
     rootDocument?: string;
+
+    [key: string]: any;
 }
 
 export const initialState: GenericPayloadState<Document> = {

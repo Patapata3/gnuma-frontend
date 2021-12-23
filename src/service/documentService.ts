@@ -33,13 +33,16 @@ export const createDocument = async (document: UnPersistedDocument): Promise<Doc
     formData.append('citationInformation', document.citationInformation);
     formData.append('augmented', document.augmented ? 'true' : 'false');
     formData.append('tasks', document.tasks.join(', '));
-    formData.append('dataFields', '');
+    document.dataFields.forEach((field, index) => {
+        formData.append(`dataFields[${index}].name`, field.name);
+        formData.append(`dataFields[${index}].description`, field.description);
+    })
 
     if(document.rootDocument) {
         formData.append('rootDocument', document.rootDocument);
     }
 
-    formData.append('data', document.data, )
+    formData.append('data', document.data);
 
     const response = await fetch(endpoint, {
         method: 'POST',
