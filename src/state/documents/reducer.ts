@@ -45,7 +45,8 @@ export type UnPersistedDocument = {
     tasks: string[];
     data: File;
     augmented: boolean;
-    rootDocument?: string;
+    rootDocumentNameRule?: string;
+    augmentedDocumentNameRule?: string;
 
     [key: string]: any;
 }

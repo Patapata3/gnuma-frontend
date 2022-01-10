@@ -1,6 +1,7 @@
 import {apiUrlBuilder, checkResponse} from './common';
 
 import {Document, UnPersistedDocument} from '../state/documents/reducer';
+import {AssertionError} from 'assert';
 
 export const API_HOST = 'http://132.180.195.21';
 export const API_PORT = '8080';
@@ -36,10 +37,85 @@ export const createDocument = async (document: UnPersistedDocument): Promise<Doc
     document.dataFields.forEach((field, index) => {
         formData.append(`dataFields[${index}].name`, field.name);
         formData.append(`dataFields[${index}].description`, field.description);
-    })
+    });
 
-    if(document.rootDocument) {
-        formData.append('rootDocument', document.rootDocument);
+    if (document.augmented) {
+        if (!document.rootDocumentNameRule) {
+            //
+            throw new TypeError('Missing naming rule for root document.');
+        }
+
+        if (!document.augmentedDocumentNameRule) {
+            //
+            throw new TypeError('Missing naming rule for augmented document.');
+        }
+
+        // document is augmented, we have to match it with its root document
+        const variableRegex = /{{\w+}}/g;
+
+        const findVariableNames = (rule: string) => {
+            const match = rule.match(variableRegex);
+            if (match == null) {
+                return [];
+            }
+            return match.map(rawVariable => rawVariable.replace('{{', '').replace('}}', ''));
+        }
+
+        const rootDocumentRuleVariables = findVariableNames(document.rootDocumentNameRule);
+        const augmentedDocumentRuleVariables = findVariableNames(document.augmentedDocumentNameRule);
+
+        // check for duplicate variable names
+        const duplicateVariables: string[] = [];
+        const sortedVariables = [...augmentedDocumentRuleVariables].sort();
+        let lastVariable: string | undefined = undefined;
+        for (let i = 0; i < augmentedDocumentRuleVariables.length; ++i) {
+            const currentVariable = sortedVariables[i];
+            if (currentVariable === lastVariable) {
+                if (!duplicateVariables.includes(currentVariable)) {
+                    duplicateVariables.push(currentVariable);
+                }
+            }
+            lastVariable = currentVariable;
+        }
+
+        if (duplicateVariables.length > 0) {
+            throw new TypeError('You have duplicate variable names in the naming rule of augmented documents. ' +
+                'This is not allowed, please distinguish between them, even if the are the same for all documents. ' +
+                'Offending variables: ' +  duplicateVariables.join(', '));
+        }
+
+        const unsatisfiedVariables = rootDocumentRuleVariables.filter(v => !augmentedDocumentRuleVariables.includes(v));
+        if (unsatisfiedVariables.length > 0) {
+            //
+            throw new TypeError(
+                'There are variables in the root document naming rule, ' +
+                'that do not appear in the augmented naming rule: ' +
+                unsatisfiedVariables.join(', ') + '. ' +
+                'You need to include them.'
+            );
+        }
+
+        let valueRegex = document.augmentedDocumentNameRule;
+        // escape reserved chars in original name
+        valueRegex = valueRegex.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        for (const variable of augmentedDocumentRuleVariables) {
+            valueRegex = valueRegex.replace(`\\{\\{${variable}\\}\\}`, '(.*)');
+        }
+
+        const valueMatch = document.data.name.match(valueRegex);
+        if (valueMatch == null) {
+            throw new AssertionError({message: `Value regex /${valueRegex}/ did not match "${document.data.name}".`});
+        }
+
+        const variableValues = valueMatch.slice(1)
+
+        let rootDocumentName = document.rootDocumentNameRule;
+        for (let i = 0; i < augmentedDocumentRuleVariables.length; ++i) {
+            const variableName = augmentedDocumentRuleVariables[i];
+            const variableValue = variableValues[i];
+            rootDocumentName = rootDocumentName.replaceAll(`{{${variableName}}}`, variableValue);
+        }
+        formData.append('rootDocument', rootDocumentName);
     }
 
     formData.append('data', document.data);
@@ -51,7 +127,7 @@ export const createDocument = async (document: UnPersistedDocument): Promise<Doc
     checkResponse(response);
 
     const data = await response.json();
-    return await getSingleDocument(data)
+    return await getSingleDocument(data);
 }
 
 export const updateDocument = async (documentId: string, document: Partial<Document>): Promise<Document> => {

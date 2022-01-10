@@ -1,7 +1,7 @@
 import React from 'react';
 
-import {Button, Card, Checkbox, Divider, Form, Input, message, Modal, Select, Steps, Table} from 'antd';
-import {PlusOutlined} from '@ant-design/icons';
+import {Button, Card, Checkbox, Divider, Form, Input, message, Modal, Select, Steps, Table, Tooltip} from 'antd';
+import {PlusOutlined, QuestionCircleOutlined} from '@ant-design/icons';
 
 import {DocumentsContext} from '../components/DocumentsContextProvider/DocumentsContextProvider';
 
@@ -211,13 +211,31 @@ export default function DocumentsView() {
                     </Form.Item>
 
                     <Form.Item
-                        label={'Root document'}
-                        name={'rootDocument'}
+                        label={'Augmented document naming rule'}
+                        name={'augmentedDocumentNameRule'}
                     >
-                        <div style={{color: 'red'}}>TODO: we need to find a way to dynamically associate augmented
-                            documents with their root doc, maybe via regex? or manually, though this can be
-                            cumbersome...
-                        </div>
+                        <Input
+                            addonAfter={
+                                <Tooltip
+                                    title={'Name '}
+                                ><QuestionCircleOutlined/>
+                                </Tooltip>
+                            }
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        label={'Root document naming rule'}
+                        name={'rootDocumentNameRule'}
+                    >
+                        <Input
+                            addonAfter={
+                                <Tooltip
+                                    title={'Name '}
+                                ><QuestionCircleOutlined/>
+                                </Tooltip>
+                            }
+                        />
                     </Form.Item>
                 </Form>
             )
