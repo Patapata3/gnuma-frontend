@@ -46,9 +46,6 @@ export const createDocument = async (document: UnPersistedDocument): Promise<Doc
 
     const response = await fetch(endpoint, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        },
         body: formData
     });
     checkResponse(response);
