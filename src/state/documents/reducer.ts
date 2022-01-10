@@ -24,6 +24,7 @@ export type DataField = {
 
 export type Document = {
     id: string;
+    name: string;
     domain: string;
     source: string;
     contributor: string;
@@ -45,8 +46,8 @@ export type UnPersistedDocument = {
     tasks: string[];
     data: File;
     augmented: boolean;
-    rootDocumentNameRule?: string;
-    augmentedDocumentNameRule?: string;
+    rootNameRule?: string;
+    nameRule?: string;
 
     [key: string]: any;
 }

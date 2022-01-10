@@ -3,12 +3,14 @@ import React from 'react';
 import {Button, Card, Checkbox, Divider, Form, Input, message, Modal, Select, Steps, Table, Tooltip} from 'antd';
 import {PlusOutlined, QuestionCircleOutlined} from '@ant-design/icons';
 
+import {FieldData} from 'rc-field-form/lib/interface';
+
+import {calculateRootDocumentName, findDocuments} from '../service/documentService';
+
 import {DocumentsContext} from '../components/DocumentsContextProvider/DocumentsContextProvider';
 
 import DocumentsList from '../components/DocumentList/DocumentsList';
 import FileDropTarget from '../components/FileDropTaret/FileDropTarget';
-
-import {FieldData} from 'rc-field-form/lib/interface';
 
 
 export type FieldInfo = {
@@ -25,14 +27,15 @@ export type MetaData = {
     citationInformation: string;
     tasks: string[];
     augmented: boolean;
-    rootDocument?: string;
+    rootNameRule?: string;
+    nameRule?: string;
     [key: string]: any;
 }
 
 export default function DocumentsView() {
     const context = React.useContext(DocumentsContext);
     const [modalVisible, setModalVisible] = React.useState(false);
-    const [files, setFiles] = React.useState<File[]>([]);
+    const [files, setFiles] = React.useState<{ file: File, root?: string }[]>([]);
     const [fieldInfo, setFieldInfo] = React.useState<FieldInfo>({});
     const [currentStep, setCurrentStep] = React.useState(0);
     const [metaData, setMetaData] = React.useState<MetaData>({
@@ -53,11 +56,11 @@ export default function DocumentsView() {
     const executeUpload = async () => {
         //setModalVisible(false);
 
-        const uploadPromises = files.map(async (f) => {
+        const uploadPromises = files.map(async ({file}) => {
             return context.onCreate({
                 ...metaData,
                 dataFields: Object.keys(fieldInfo).map(k => fieldInfo[k]),
-                data: f
+                data: file
             });
         });
 
@@ -103,7 +106,8 @@ export default function DocumentsView() {
     }
 
     const handleFilesDropped = async (droppedFiles: File[]) => {
-        setFiles([...files, ...droppedFiles]);
+        const newFiles = droppedFiles.map((f) => ({file: f}));
+        setFiles([...files, ...newFiles]);
 
         const newFieldInfo = {...fieldInfo};
         const fieldsAnalyzedPromises = droppedFiles.map(async (f) => {
@@ -197,6 +201,26 @@ export default function DocumentsView() {
             )
         },
         {
+            title: 'Upload CoNLL documents',
+            content: (
+                <>
+                    <FileDropTarget
+                        onFilesDropped={handleFilesDropped}
+                    />
+                    <Divider type={'horizontal'}/>
+                    <Table
+                        dataSource={files}
+                        columns={[
+                            {title: 'File', dataIndex: 'name'}
+                        ]}
+                        pagination={{
+                            pageSize: 5
+                        }}
+                    />
+                </>
+            )
+        },
+        {
             title: 'Augmentation information',
             content: (
                 <Form
@@ -237,27 +261,50 @@ export default function DocumentsView() {
                             }
                         />
                     </Form.Item>
+                    <Form.Item>
+                        <Button
+                            onClick={async () => {
+                                const filesWithRoot: { file: File, root: string }[] = [];
+                                const erroneousFiles: string[] = [];
+                                const candidatePromises = files.map(async ({file}) => {
+                                    if (!metaData.rootNameRule || !metaData.nameRule) {
+                                        message.error('Root naming rule or document naming rule are not set.').then();
+                                        return;
+                                    }
+                                    const rootName = calculateRootDocumentName(metaData.rootNameRule, metaData.nameRule, file.name);
+                                    // FIXME: this will sequentially fetch single documents, should be done in batch
+                                    const rootCandidates = await findDocuments({name: rootName});
+                                    if (rootCandidates.length === 0) {
+                                        message.error(
+                                            `Could not find a root document with name "${rootName}"` +
+                                            `for document "${file.name}" in the document service.`);
+                                        erroneousFiles.push(file.name);
+                                        return;
+                                    }
+                                    if (rootCandidates.length > 1) {
+                                        message.error(`There are multiple documents with name "${rootName}" registered in the document service.`);
+                                        erroneousFiles.push(file.name);
+                                        return;
+                                    }
+
+                                    // found exactly one root document candidate, update list of files
+                                    filesWithRoot.push({
+                                        file: file,
+                                        root: rootCandidates[0].name
+                                    });
+                                });
+                                await Promise.all(candidatePromises);
+                                if (erroneousFiles.length === 0) {
+                                    setFiles(filesWithRoot);
+                                } else {
+                                    message.warning(`Cancelled upload of documents, since there were ${erroneousFiles.length} documents, where the root document could not be determined.`);
+                                }
+                            }}
+                        >
+                            Validate
+                        </Button>
+                    </Form.Item>
                 </Form>
-            )
-        },
-        {
-            title: 'Upload CoNLL documents',
-            content: (
-                <>
-                    <FileDropTarget
-                        onFilesDropped={handleFilesDropped}
-                    />
-                    <Divider type={'horizontal'}/>
-                    <Table
-                        dataSource={files}
-                        columns={[
-                            {title: 'File', dataIndex: 'name'}
-                        ]}
-                        pagination={{
-                            pageSize: 5
-                        }}
-                    />
-                </>
             )
         },
         {
