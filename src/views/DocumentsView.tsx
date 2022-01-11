@@ -97,11 +97,8 @@ export default function DocumentsView() {
         if (currentStep > 0) {
             buttons.push((<Button onClick={prevStep}>Previous</Button>));
         }
-        if (currentStep < steps.length - 1) {
-            buttons.push((<Button onClick={nextStep} type={'primary'}>Next</Button>));
-        }
-        if (currentStep === steps.length - 1) {
-            buttons.push((<Button onClick={executeUpload} type={'primary'}>Upload</Button>));
+        if (currentStep < steps.length) {
+            buttons.push(steps[currentStep].action);
         }
         return buttons;
     }
@@ -144,9 +141,51 @@ export default function DocumentsView() {
         setFieldInfo(newFieldInfo);
     }
 
+    const validate = async () => {
+        message.loading({content: 'Validating root document rules', key: 'root-doc-validation'});
+
+        const filesWithRoot: { file: File, root: string }[] = [];
+        const erroneousFiles: string[] = [];
+        const candidatePromises = files.map(async ({file}) => {
+            if (!metaData.rootNameRule || !metaData.nameRule) {
+                message.error('Root naming rule or document naming rule are not set.').then();
+                return;
+            }
+            const rootName = calculateRootDocumentName(metaData.rootNameRule, metaData.nameRule, file.name);
+            // FIXME: this will sequentially fetch single documents, should be done in batch
+            const rootCandidates = await findDocuments({name: rootName});
+            if (rootCandidates.length === 0) {
+                message.error(
+                    `Could not find a root document with name "${rootName}"` +
+                    `for document "${file.name}" in the document service.`);
+                erroneousFiles.push(file.name);
+                return;
+            }
+            if (rootCandidates.length > 1) {
+                message.error(`There are multiple documents with name "${rootName}" registered in the document service.`);
+                erroneousFiles.push(file.name);
+                return;
+            }
+
+            // found exactly one root document candidate, update list of files
+            filesWithRoot.push({
+                file: file,
+                root: rootCandidates[0].uri
+            });
+        });
+        await Promise.all(candidatePromises);
+        message.success({content: 'Validating root document rules', key: 'root-doc-validation'});
+        if (erroneousFiles.length === 0) {
+            setFiles(filesWithRoot);
+        } else {
+            message.warning(`Cancelled upload of documents, since there were ${erroneousFiles.length} documents, where the root document could not be determined.`);
+        }
+    }
+
     const steps: {
         title: string;
         content: React.ReactNode;
+        action: React.ReactNode;
     }[] = [
         {
             title: 'Document information',
@@ -199,7 +238,8 @@ export default function DocumentsView() {
                         </Select>
                     </Form.Item>
                 </Form>
-            )
+            ),
+            action: (<Button onClick={nextStep} type={'primary'}>Next</Button>)
         },
         {
             title: 'Upload CoNLL documents',
@@ -220,7 +260,8 @@ export default function DocumentsView() {
                         }}
                     />
                 </>
-            )
+            ),
+            action: (<Button onClick={nextStep} type={'primary'}>Next</Button>)
         },
         {
             title: 'Augmentation information',
@@ -237,6 +278,7 @@ export default function DocumentsView() {
                     </Form.Item>
 
                     <Form.Item
+                        hidden={!metaData.augmented}
                         label={'Augmented document naming rule'}
                         name={'nameRule'}
                     >
@@ -253,6 +295,7 @@ export default function DocumentsView() {
                     <Form.Item
                         label={'Root document naming rule'}
                         name={'rootNameRule'}
+                        hidden={!metaData.augmented}
                     >
                         <Input
                             addonAfter={
@@ -263,55 +306,19 @@ export default function DocumentsView() {
                             }
                         />
                     </Form.Item>
-                    <Form.Item>
-                        <Button
-                            onClick={async () => {
-                                message.loading({content: 'Validating root document rules', key: 'root-doc-validation'});
-
-                                const filesWithRoot: { file: File, root: string }[] = [];
-                                const erroneousFiles: string[] = [];
-                                const candidatePromises = files.map(async ({file}) => {
-                                    console.log('Checking file ', file.name)
-                                    if (!metaData.rootNameRule || !metaData.nameRule) {
-                                        message.error('Root naming rule or document naming rule are not set.').then();
-                                        return;
-                                    }
-                                    const rootName = calculateRootDocumentName(metaData.rootNameRule, metaData.nameRule, file.name);
-                                    // FIXME: this will sequentially fetch single documents, should be done in batch
-                                    const rootCandidates = await findDocuments({name: rootName});
-                                    if (rootCandidates.length === 0) {
-                                        message.error(
-                                            `Could not find a root document with name "${rootName}"` +
-                                            `for document "${file.name}" in the document service.`);
-                                        erroneousFiles.push(file.name);
-                                        return;
-                                    }
-                                    if (rootCandidates.length > 1) {
-                                        message.error(`There are multiple documents with name "${rootName}" registered in the document service.`);
-                                        erroneousFiles.push(file.name);
-                                        return;
-                                    }
-
-                                    // found exactly one root document candidate, update list of files
-                                    filesWithRoot.push({
-                                        file: file,
-                                        root: rootCandidates[0].uri
-                                    });
-                                });
-                                await Promise.all(candidatePromises);
-                                message.success({content: 'Validating root document rules', key: 'root-doc-validation'});
-                                if (erroneousFiles.length === 0) {
-                                    setFiles(filesWithRoot);
-                                } else {
-                                    message.warning(`Cancelled upload of documents, since there were ${erroneousFiles.length} documents, where the root document could not be determined.`);
-                                }
-                            }}
-                        >
-                            Validate
-                        </Button>
-                    </Form.Item>
                 </Form>
-            )
+            ),
+            action: ((
+                <Button
+                    onClick={async () => {
+                        await validate();
+                        nextStep();
+                    }}
+                    type={'primary'}
+                >
+                    Next
+                </Button>
+            ))
         },
         {
             title: 'Field information',
@@ -362,7 +369,8 @@ export default function DocumentsView() {
                         />
                     </Form.Item>
                 </Form>
-            )
+            ),
+            action: (<Button onClick={executeUpload}>Finish</Button>)
         }
     ]
 
