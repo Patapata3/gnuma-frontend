@@ -1,6 +1,20 @@
 import React from 'react';
 
-import {Button, Card, Checkbox, Divider, Form, Input, message, Modal, Select, Steps, Table, Tooltip} from 'antd';
+import {
+    Button,
+    Card,
+    Checkbox,
+    Divider,
+    Form,
+    Input,
+    message,
+    Modal,
+    Popover,
+    Select,
+    Steps,
+    Table,
+    Tooltip
+} from 'antd';
 import {PlusOutlined, QuestionCircleOutlined} from '@ant-design/icons';
 
 import {FieldData} from 'rc-field-form/lib/interface';
@@ -276,6 +290,46 @@ export default function DocumentsView() {
                     >
                         <Checkbox/>
                     </Form.Item>
+
+                    <Form.Item
+                        hidden={!metaData.augmented}
+                    >
+                        <Popover
+                            content={
+                                <div
+                                    style={{width: '75vw'}}
+                                >
+                                    <div>
+                                        Define how augmented documents are assigned to their original counterparts.
+                                    </div>
+
+                                    <div>
+                                        Gnuma will try to link your documents to their root documents via their name. Say your augmented files are named like <code>augmented-file-01.conll</code>, <code>augmented-file-02.conll</code> etc. and the corresponding original ones like <code>original-document-01.txt</code>, <code>original-document-01.txt</code> etc.
+                                    </div>
+
+                                    <div>
+                                        We now define rules for the structure of augmented file names and original (root) file names respectively. Parts of the file name can be expressed by variables, i.e. running counters like the <code>01</code> in the <code>augmented-file-01.conll</code> example.
+                                    </div>
+                                    <div>
+                                        Variables are denominated by a variable name in double curly braces, e.g. <code>{"{{index}}"}</code>. Values are taken from the augmented file name and are substituted in the root filename.
+                                    </div>
+
+                                    <div>
+                                        In our example, the (augmented) naming rule <code>{"augmented - file - {{index}}.conll"}</code> defines the variable <code>index</code> which becomes <code>01</code> for the filename <code>augmented-file-01.conll</code>.
+                                    </div>
+
+                                    <div>
+                                        This value is then injected into the (root) naming rule <code>{"original-document-{{index}}.txt"}</code> to produce the root document name <code>original-document-01.txt</code>, which is looked up in the document service. If exactly one such document is found, your augmented file <code>augmented-file-01.conll</code> is linked to it.
+                                    </div>
+                                </div>
+                            }
+                        >
+                            How to use <QuestionCircleOutlined/>
+                        </Popover>
+
+                    </Form.Item>
+
+                    <Divider type={'horizontal'}/>
 
                     <Form.Item
                         hidden={!metaData.augmented}
