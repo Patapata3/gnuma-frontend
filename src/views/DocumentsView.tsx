@@ -56,9 +56,10 @@ export default function DocumentsView() {
     const executeUpload = async () => {
         //setModalVisible(false);
 
-        const uploadPromises = files.map(async ({file}) => {
+        const uploadPromises = files.map(async ({file, root}) => {
             return context.onCreate({
                 ...metaData,
+                root: root,
                 dataFields: Object.keys(fieldInfo).map(k => fieldInfo[k]),
                 data: file
             });
@@ -211,7 +212,8 @@ export default function DocumentsView() {
                     <Table
                         dataSource={files}
                         columns={[
-                            {title: 'File', dataIndex: 'name'}
+                            {title: 'File', dataIndex: ['file', 'name']},
+                            {title: 'Root Document', dataIndex: ['file', 'root']}
                         ]}
                         pagination={{
                             pageSize: 5
@@ -236,7 +238,7 @@ export default function DocumentsView() {
 
                     <Form.Item
                         label={'Augmented document naming rule'}
-                        name={'augmentedDocumentNameRule'}
+                        name={'nameRule'}
                     >
                         <Input
                             addonAfter={
@@ -250,7 +252,7 @@ export default function DocumentsView() {
 
                     <Form.Item
                         label={'Root document naming rule'}
-                        name={'rootDocumentNameRule'}
+                        name={'rootNameRule'}
                     >
                         <Input
                             addonAfter={
@@ -264,9 +266,12 @@ export default function DocumentsView() {
                     <Form.Item>
                         <Button
                             onClick={async () => {
+                                message.loading({content: 'Validating root document rules', key: 'root-doc-validation'});
+
                                 const filesWithRoot: { file: File, root: string }[] = [];
                                 const erroneousFiles: string[] = [];
                                 const candidatePromises = files.map(async ({file}) => {
+                                    console.log('Checking file ', file.name)
                                     if (!metaData.rootNameRule || !metaData.nameRule) {
                                         message.error('Root naming rule or document naming rule are not set.').then();
                                         return;
@@ -290,10 +295,11 @@ export default function DocumentsView() {
                                     // found exactly one root document candidate, update list of files
                                     filesWithRoot.push({
                                         file: file,
-                                        root: rootCandidates[0].name
+                                        root: rootCandidates[0].uri
                                     });
                                 });
                                 await Promise.all(candidatePromises);
+                                message.success({content: 'Validating root document rules', key: 'root-doc-validation'});
                                 if (erroneousFiles.length === 0) {
                                     setFiles(filesWithRoot);
                                 } else {

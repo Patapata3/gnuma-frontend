@@ -119,7 +119,7 @@ export const createDocument = async (document: UnPersistedDocument): Promise<Doc
     formData.append('augmented', document.augmented ? 'true' : 'false');
     formData.append('tasks', document.tasks.join(', '));
     document.dataFields.forEach((field, index) => {
-        formData.append(`dataFields[${index}].name`, field.name);
+        formData.append(`dataFields[${index}].fieldName`, field.name);
         formData.append(`dataFields[${index}].description`, field.description);
     });
 
