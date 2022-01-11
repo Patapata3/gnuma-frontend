@@ -52,6 +52,7 @@ export default function DocumentsView() {
     const [files, setFiles] = React.useState<{ file: File, root?: string }[]>([]);
     const [fieldInfo, setFieldInfo] = React.useState<FieldInfo>({});
     const [currentStep, setCurrentStep] = React.useState(0);
+    const [simulatedAugmentedFileName, setSimulatedAugmentedFileName] = React.useState(files[0]?.file.name);
     const [metaData, setMetaData] = React.useState<MetaData>({
         domain: '',
         source: '',
@@ -119,7 +120,9 @@ export default function DocumentsView() {
 
     const handleFilesDropped = async (droppedFiles: File[]) => {
         const newFiles = droppedFiles.map((f) => ({file: f}));
-        setFiles([...files, ...newFiles]);
+        const updatedFiles = [...files, ...newFiles];
+        setFiles(updatedFiles);
+        setSimulatedAugmentedFileName(updatedFiles[0]?.file.name);
 
         const newFieldInfo = {...fieldInfo};
         const fieldsAnalyzedPromises = droppedFiles.map(async (f) => {
@@ -153,6 +156,13 @@ export default function DocumentsView() {
         await Promise.all(fieldsAnalyzedPromises);
 
         setFieldInfo(newFieldInfo);
+    }
+
+    const simulateRootDocumentName = () => {
+        if(metaData.rootNameRule && metaData.nameRule && simulatedAugmentedFileName) {
+            return calculateRootDocumentName(metaData.rootNameRule, metaData.nameRule, simulatedAugmentedFileName);
+        }
+        return '';
     }
 
     const validate = async () => {
@@ -326,10 +336,7 @@ export default function DocumentsView() {
                         >
                             How to use <QuestionCircleOutlined/>
                         </Popover>
-
                     </Form.Item>
-
-                    <Divider type={'horizontal'}/>
 
                     <Form.Item
                         hidden={!metaData.augmented}
@@ -358,6 +365,32 @@ export default function DocumentsView() {
                                 ><QuestionCircleOutlined/>
                                 </Tooltip>
                             }
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        hidden={!metaData.augmented}
+                    >
+                        <Divider type={'horizontal'}/>
+                    </Form.Item>
+
+                    <Form.Item
+                        hidden={!metaData.augmented}
+                        label={'Example augmented file name'}
+                    >
+                        <Input
+                            value={simulatedAugmentedFileName}
+                            onChange={(e) => setSimulatedAugmentedFileName(e.target.value)}
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        label={'Calculated original file name'}
+                        hidden={!metaData.augmented}
+                    >
+                        <Input
+                            disabled
+                            value={simulateRootDocumentName()}
                         />
                     </Form.Item>
                 </Form>
