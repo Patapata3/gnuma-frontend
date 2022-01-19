@@ -13,6 +13,7 @@
     "@types/react-dom": "^17.0.0",
     "antd": "^4.16.13",
     "aphrodite": "^2.4.0",
+    "env-cmd": "^10.1.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-dropzone": "^11.4.2",
@@ -25,8 +26,8 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start --host 0.0.0.0",
-    "build": "react-scripts build",
+    "start": "env-cmd -e development react-scripts start --host 0.0.0.0",
+    "build": "env-cmd -e production react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

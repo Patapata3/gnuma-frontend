@@ -1,11 +1,17 @@
 import {LogEntry} from '../state/logs/reducer';
 import {apiUrlBuilder, checkResponse} from './common';
+import assert from 'assert';
 
 
-export const API_HOST = 'http://132.180.195.21';
-export const API_PORT = '8090';
-export const API_BASE = 'api';
-export const API_VERSION = 'v1';
+export const API_HOST = process.env.REACT_APP_LOGGING_SERVICE_API_HOST;
+export const API_PORT = process.env.REACT_APP_LOGGING_SERVICE_API_PORT;
+export const API_BASE = process.env.REACT_APP_LOGGING_SERVICE_API_BASE;
+export const API_VERSION = process.env.REACT_APP_LOGGING_SERVICE_API_VERSION;
+
+assert(API_HOST);
+assert(API_PORT);
+assert(API_BASE);
+assert(API_VERSION);
 
 const getApiUrl = apiUrlBuilder(API_HOST, API_PORT, API_BASE, API_VERSION);
 

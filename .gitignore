@@ -2,6 +2,9 @@
 # ide config
 .idea/
 
+# config files
+.env-cmdrc.json
+
 # dependencies
 /node_modules
 /.pnp
