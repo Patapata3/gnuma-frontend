@@ -15,21 +15,21 @@ export type ExperimentClassifier = {
     id: string;
     remoteId: string;
     address: string;
+    status: string;
+    currentSteps: number;
+    totalSteps: number;
     model: Model;
+    results: {
+        [key: string]: number[]
+    }
 }
 
 export type Experiment = {
     id: string;
     date: string;
-    status: string;
-    classifier: ExperimentClassifier;
+    classifiers: ExperimentClassifier[];
     trainDatasetId: string;
     testDatasetId: string;
-    resultDatesetId: string;
-    resultSourceType: string;
-    results: {
-        [key: string]: number[]
-    }
 }
 
 export const initialState: GenericPayloadState<Experiment> = {
