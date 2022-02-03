@@ -1,19 +1,35 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 
 import {Link} from 'react-router-dom';
-import {Button, Card, List, Popconfirm, Table, Tag} from 'antd';
+import {Button, Card, Form, List, Modal, Popconfirm, Select, Spin, Table, Tag} from 'antd';
 import {DeleteOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons';
 
 import {Experiment, ExperimentClassifier} from "../state/experiments/reducer";
+import HyperParameterForm from "../components/HyperParameterForm/HyperParameterForm";
 
 import {ExperimentsContext} from "../components/ExperimentsContextProvider/ExperimentsContexProvider";
+import {ClassifiersContext} from "../components/ClassifiersContextProvider/ClassifiersContextProvider";
+import {Classifier} from "../state/classifiers/reducer";
 
 export default function ExperimentsView() {
-    const context = useContext(ExperimentsContext);
+    const experimentContext = useContext(ExperimentsContext);
+    const classifierContext = useContext(ClassifiersContext);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalLoading, setModalLoading] = useState(false);
+    const [selectedClassifiers, setSelectedClassifiers] = useState([] as Array<string>);
 
     useEffect(() => {
-        context.onFetchAll()
+        experimentContext.onFetchAll()
     }, []);
+
+    const handleCancel = () => {
+        setModalVisible(false);
+    }
+
+    const onStartButtonClick = () => {
+        classifierContext.onFetchAll();
+        setModalVisible(true);
+    }
 
     const colorMap = new Map<string, string>([
         ["FINISH", "#87d068"],
@@ -37,7 +53,7 @@ export default function ExperimentsView() {
                 </Link>
                 <Popconfirm
                     title={"Delete experiment?"}
-                    onConfirm={() => context.onDelete(experiment.id)}
+                    onConfirm={() => experimentContext.onDelete(experiment.id)}
                 >
                     <Button
                         type={'text'}
@@ -49,7 +65,9 @@ export default function ExperimentsView() {
         )
     }
 
-    const experiments = Object.values(context.state.elements);
+    const experiments = Object.values(experimentContext.state.elements);
+    const classifiers = Object.values(classifierContext.state.elements);
+    const classifierMap = new Map(classifiers.map(classifier => [`${classifier.id} at ${classifier.address}`, classifier] as [string, Classifier]));
 
     const chooseTagColor = (status: string) => {
         return colorMap.has(status) ? colorMap.get(status) : DEFAULT_COLOR;
@@ -75,6 +93,11 @@ export default function ExperimentsView() {
 
     }
 
+    const handleSelectChange = (selectedClassifiers: string[]) => {
+
+        setSelectedClassifiers(selectedClassifiers);
+    }
+
     return (
         <div key={'experiments-view'}>
             <Card
@@ -83,13 +106,51 @@ export default function ExperimentsView() {
                     <Button
                         type={'primary'}
                         icon={<PlusOutlined/>}
+                        onClick={onStartButtonClick}
                     >
                         Start
                     </Button>
                 }
             >
+                <Modal title="Start an experiment"
+                       visible={modalVisible}
+                       onCancel={handleCancel}
+                       centered
+                       width='50%'
+                       footer={[
+                           <Button key="back" onClick={handleCancel}>
+                               Cancel
+                           </Button>,
+                           <Button key="start" type={'primary'} loading={modalLoading}>
+                               Start
+                           </Button>
+                       ]}
+                >
+                    <Spin spinning={classifierContext.state.loading}>
+                        <Form
+                            labelCol={{span: 6}}
+                            wrapperCol={{span: 16}}
+                            layout="horizontal"
+                        >
+                            <Form.Item label="Classifiers">
+                                <Select mode={'multiple'}
+                                        placeholder={'Pick a classifier'}
+                                        value={selectedClassifiers}
+                                        style={{width: '100%'}}
+                                        onChange={handleSelectChange}
+                                >
+                                    {classifiers.map(classifier => (
+                                        <Select.Option key={classifier.address} value={`${classifier.id} at ${classifier.address}`}>{classifier.id}</Select.Option>
+                                    ))
+                                    }
+                                </Select>
+                            </Form.Item>
+
+                        </Form>
+                    </Spin>
+                </Modal>
                 <Table
-                    loading={context.state.loading}
+                    loading={experimentContext.state.loading}
                     dataSource={experiments}
                     columns={[
                         {

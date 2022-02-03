@@ -22,6 +22,7 @@ import DocumentsContextProvider from './components/DocumentsContextProvider/Docu
 import ExperimentsContextProvider from "./components/ExperimentsContextProvider/ExperimentsContexProvider";
 import LogsContextProvider from './components/LogsContextProvider/LogsContextProvider';
 import DebugConfigView from './views/DebugConfigView';
+import ClassifierContextProvider from "./components/ClassifiersContextProvider/ClassifiersContextProvider";
 
 
 function App() {
@@ -114,21 +115,23 @@ function App() {
             <DocumentsContextProvider>
                 <LogsContextProvider>
                     <ExperimentsContextProvider>
-                        <Layout style={{minHeight: '100vh'}}>
-                            <Header style={{color: color.primary, fontSize: '1.25em'}}>
-                                GNUMA
-                            </Header>
-                            <Layout>
-                                <Sider>
-                                    {renderMenu()}
-                                </Sider>
-                                <Content
-                                    className={'gnuma-view'}
-                                >
-                                    {renderContent()}
-                                </Content>
+                        <ClassifierContextProvider>
+                            <Layout style={{minHeight: '100vh'}}>
+                                <Header style={{color: color.primary, fontSize: '1.25em'}}>
+                                    GNUMA
+                                </Header>
+                                <Layout>
+                                    <Sider>
+                                        {renderMenu()}
+                                    </Sider>
+                                    <Content
+                                        className={'gnuma-view'}
+                                    >
+                                        {renderContent()}
+                                    </Content>
+                                </Layout>
                             </Layout>
-                        </Layout>
+                        </ClassifierContextProvider>
                     </ExperimentsContextProvider>
                 </LogsContextProvider>
             </DocumentsContextProvider>
