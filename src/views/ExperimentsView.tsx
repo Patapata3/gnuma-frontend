@@ -17,6 +17,8 @@ export default function ExperimentsView() {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [selectedClassifiers, setSelectedClassifiers] = useState([] as Array<string>);
+    const [hyperParamValues, setHyperParamValues] = useState(new Map<string, Map<string, string | boolean>>());
+    const [hyperParamsValid, setHyperParamsValid] = useState(false);
 
     useEffect(() => {
         experimentContext.onFetchAll()
@@ -94,8 +96,24 @@ export default function ExperimentsView() {
     }
 
     const handleSelectChange = (selectedClassifiers: string[]) => {
-
         setSelectedClassifiers(selectedClassifiers);
+    }
+
+    const handleSelect = (selectedClassifier: string) => {
+        const classifier = classifierMap.get(selectedClassifier)
+        if (!classifier) {
+            return;
+        }
+        setHyperParamValues(hyperParamValues.set(classifier.address, createHyperParamsMap(classifier)))
+    }
+
+    const createHyperParamsMap = (classifier: Classifier) => {
+        return new Map(classifier.hyperParameters.map(param => [param.key, param.defaultValue ? param.defaultValue : ''] as [string, string | boolean]))
+    }
+
+    const handleHyperParamChange = (address: string, values: Map<string, string | boolean>, isValid: boolean) => {
+        setHyperParamValues(new Map(hyperParamValues).set(address, values));
+        setHyperParamsValid(isValid);
     }
 
     return (
@@ -121,7 +139,7 @@ export default function ExperimentsView() {
                            <Button key="back" onClick={handleCancel}>
                                Cancel
                            </Button>,
-                           <Button key="start" type={'primary'} loading={modalLoading}>
+                           <Button key="start" disabled={!hyperParamsValid} type={'primary'} loading={modalLoading}>
                                Start
                            </Button>
                        ]}
@@ -138,6 +156,7 @@ export default function ExperimentsView() {
                                         value={selectedClassifiers}
                                         style={{width: '100%'}}
                                         onChange={handleSelectChange}
+                                        onSelect={handleSelect}
                                 >
                                     {classifiers.map(classifier => (
                                         <Select.Option key={classifier.address} value={`${classifier.id} at ${classifier.address}`}>{classifier.id}</Select.Option>
@@ -145,8 +164,10 @@ export default function ExperimentsView() {
                                     }
                                 </Select>
                             </Form.Item>
-
                         </Form>
+                        {selectedClassifiers.map(classifierKey => (
+                            <HyperParameterForm onFieldChange={handleHyperParamChange} values={hyperParamValues} classifier={classifierMap.get(classifierKey) as Classifier}/>
+                        ))}
                     </Spin>
                 </Modal>
                 <Table
