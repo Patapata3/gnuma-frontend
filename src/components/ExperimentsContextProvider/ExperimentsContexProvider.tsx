@@ -22,14 +22,14 @@ import {
 
 import {GenericPayloadState} from '../../state/common/reducer';
 
-import ExperimentsReducer, {Experiment, initialState} from "../../state/experiments/reducer";
+import ExperimentsReducer, {Experiment, ExperimentDTO, initialState} from "../../state/experiments/reducer";
 import {GenericPayloadActions} from "../../state/common/actions";
 
 type ExperimentContextType = {
     state: GenericPayloadState<Experiment>;
     onFetchAll: () => void;
     onFetchOne: (id: string) => void;
-    onStart: (experiment: Partial<Experiment>) => void;
+    onStart: (experiment: ExperimentDTO) => void;
     onDelete: (id: string) => void;
     onStop: (id: string) => void;
     onPause: (id: string) => void;

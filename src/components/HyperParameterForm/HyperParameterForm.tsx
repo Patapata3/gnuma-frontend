@@ -15,17 +15,12 @@ export default function HyperParameterForm (props: HyperParameterFormProps) {
 
     const handleChange = (key: string, newValue: string | boolean) => {
         //setValues(new Map(values).set(key, newValue));
+        console.log(newValue)
         props.onFieldChange(props.classifier.address, values.set(key, newValue), checkAllValuesFilled());
     }
 
     const checkAllValuesFilled = () => {
-        let allFilled = true;
-        values.forEach(value => {
-            if(!value){
-                allFilled = false;
-            }
-        })
-        return allFilled;
+        return !props.classifier.hyperParameters.filter(param => !param.optional && values.get(param.key) !== '0' && !values.get(param.key)).length
     }
 
     const renderSelect = (param: HyperParameter) => {
@@ -63,7 +58,6 @@ export default function HyperParameterForm (props: HyperParameterFormProps) {
                 value={values.get(key) as string}
                 onChange={(newValue: string) => handleChange(key, newValue)}
                 style={{width: '100%'}}
-                stringMode={true}
                 precision={param.type === "INTEGER" ? 0 : undefined}
                 defaultValue={param.defaultValue}/>
         )
@@ -74,7 +68,7 @@ export default function HyperParameterForm (props: HyperParameterFormProps) {
         return (
             <Checkbox
                 checked={values.get(key) === 'true' || values.get(key) as boolean}
-                defaultChecked={param.defaultValue.toLowerCase() === "true"}
+                defaultChecked={!!(param.defaultValue) && param.defaultValue.toLowerCase() === "true"}
                 onChange={e => handleChange(key, e.target.checked)}
             />
         )
@@ -91,7 +85,7 @@ export default function HyperParameterForm (props: HyperParameterFormProps) {
         if (param.valueList && param.valueList.length > 0) {
             return renderSelect(param);
         }
-        const renderFunction = renderMap.get(param.key);
+        const renderFunction = renderMap.get(param.type);
         return renderFunction ? renderFunction(param) : renderTextInput(param)
     }
 

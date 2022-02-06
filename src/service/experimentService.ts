@@ -1,6 +1,6 @@
 import {apiUrlBuilder, checkResponse} from './common';
 
-import {Experiment} from "../state/experiments/reducer";
+import {Experiment, ExperimentDTO} from "../state/experiments/reducer";
 import assert from 'assert';
 
 export const API_HOST = process.env.REACT_APP_EXPERIMENT_SERVICE_API_HOST;
@@ -27,7 +27,7 @@ export const getSingleExperiment = async (id: string) => {
     return await response.json();
 }
 
-export const startExperiment = async (experiment: Partial<Experiment>): Promise<Experiment> => {
+export const startExperiment = async (experiment: ExperimentDTO): Promise<Experiment> => {
     const endpoint = getApiUrl('experiment');
     const startResponse = await fetch(endpoint, {
         method: 'POST',

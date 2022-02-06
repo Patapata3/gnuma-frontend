@@ -23,13 +23,34 @@ export type ExperimentClassifier = {
         [key: string]: number[]
     }
 }
+export type DataConfig = {
+    id?: string,
+    datasetId: string;
+    testSplit: number;
+    validationSplit: number;
+    seed: number;
+}
 
 export type Experiment = {
     id: string;
     date: string;
+    description: string;
     classifiers: ExperimentClassifier[];
-    trainDatasetId: string;
-    testDatasetId: string;
+    data: DataConfig;
+}
+
+export type ExperimentClassifierDTO = {
+    id: string;
+    address: string;
+    hyperParameterValues: {
+        [key: string]: string | boolean
+    }
+}
+
+export type ExperimentDTO = {
+    description: string;
+    classifiers: ExperimentClassifierDTO[];
+    data: DataConfig
 }
 
 export const initialState: GenericPayloadState<Experiment> = {

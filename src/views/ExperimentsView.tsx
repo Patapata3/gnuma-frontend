@@ -1,24 +1,37 @@
 import React, {useContext, useEffect, useState} from 'react';
 
 import {Link} from 'react-router-dom';
-import {Button, Card, Form, List, Modal, Popconfirm, Select, Spin, Table, Tag} from 'antd';
+import {Alert, Button, Card, Form, InputNumber, List, message, Modal, Popconfirm, Select, Spin, Table, Tag} from 'antd';
 import {DeleteOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons';
 
-import {Experiment, ExperimentClassifier} from "../state/experiments/reducer";
+import {Experiment, ExperimentClassifier, ExperimentClassifierDTO} from "../state/experiments/reducer";
 import HyperParameterForm from "../components/HyperParameterForm/HyperParameterForm";
 
 import {ExperimentsContext} from "../components/ExperimentsContextProvider/ExperimentsContexProvider";
 import {ClassifiersContext} from "../components/ClassifiersContextProvider/ClassifiersContextProvider";
-import {Classifier} from "../state/classifiers/reducer";
+import {Classifier, HyperParameter} from "../state/classifiers/reducer";
+import {DatasetsContext} from "../components/DatasetsContextProvider/DatasetsContextProvider";
+import TextArea from "antd/es/input/TextArea";
 
 export default function ExperimentsView() {
+    const defaultDataConfig = {
+        datasetId: '',
+        validationSplit: 0,
+        testSplit: 0,
+        seed: 0
+    }
+
     const experimentContext = useContext(ExperimentsContext);
     const classifierContext = useContext(ClassifiersContext);
+    const datasetContext = useContext(DatasetsContext);
     const [modalVisible, setModalVisible] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [selectedClassifiers, setSelectedClassifiers] = useState([] as Array<string>);
     const [hyperParamValues, setHyperParamValues] = useState(new Map<string, Map<string, string | boolean>>());
     const [hyperParamsValid, setHyperParamsValid] = useState(false);
+    const [dataConfig, setDataConfig] = useState(defaultDataConfig);
+    const [description, setDescription] = useState('');
+
 
     useEffect(() => {
         experimentContext.onFetchAll()
@@ -30,6 +43,7 @@ export default function ExperimentsView() {
 
     const onStartButtonClick = () => {
         classifierContext.onFetchAll();
+        datasetContext.onFetchAll();
         setModalVisible(true);
     }
 
@@ -70,6 +84,7 @@ export default function ExperimentsView() {
     const experiments = Object.values(experimentContext.state.elements);
     const classifiers = Object.values(classifierContext.state.elements);
     const classifierMap = new Map(classifiers.map(classifier => [`${classifier.id} at ${classifier.address}`, classifier] as [string, Classifier]));
+    const datasets = Object.values(datasetContext.state.elements);
 
     const chooseTagColor = (status: string) => {
         return colorMap.has(status) ? colorMap.get(status) : DEFAULT_COLOR;
@@ -99,6 +114,10 @@ export default function ExperimentsView() {
         setSelectedClassifiers(selectedClassifiers);
     }
 
+    const handleDatasetChange = (selectedDataset: string) => {
+        setDataConfig(prevState => ({...prevState, datasetId: selectedDataset}));
+    }
+
     const handleSelect = (selectedClassifier: string) => {
         const classifier = classifierMap.get(selectedClassifier)
         if (!classifier) {
@@ -108,12 +127,44 @@ export default function ExperimentsView() {
     }
 
     const createHyperParamsMap = (classifier: Classifier) => {
-        return new Map(classifier.hyperParameters.map(param => [param.key, param.defaultValue ? param.defaultValue : ''] as [string, string | boolean]))
+        return new Map(classifier.hyperParameters.map(param => [param.key, param.defaultValue ? param.defaultValue : getDefaultValue(param)] as [string, string | boolean]))
+    }
+
+    const getDefaultValue = (param: HyperParameter) => {
+        return param.type === 'BOOLEAN' ? false : '';
     }
 
     const handleHyperParamChange = (address: string, values: Map<string, string | boolean>, isValid: boolean) => {
         setHyperParamValues(new Map(hyperParamValues).set(address, values));
         setHyperParamsValid(isValid);
+    }
+
+    const onStartExperiment = () => {
+        setModalLoading(true);
+        const startedClassifiers: ExperimentClassifierDTO[] = selectedClassifiers.map(classifierKey => {
+            const classifier = classifierMap.get(classifierKey) as Classifier;
+            return ({
+                id: classifier.id,
+                address: classifier.address,
+                hyperParameterValues: Array.from(hyperParamValues.get(classifier.address) as Map<string, string | boolean>)
+                    .reduce((obj, [key, value]) => {
+                        obj[key] = value;
+                        return obj;
+                    }, {} as {
+                        [key: string]: string | boolean
+                    })
+            });
+        })
+        const experimentDTO = {
+            description: description,
+            classifiers: startedClassifiers,
+            data: dataConfig
+        }
+        experimentContext.onStart(experimentDTO);
+        setModalVisible(false);
+        setModalLoading(false);
+        setSelectedClassifiers([]);
+        setDataConfig(defaultDataConfig);
     }
 
     return (
@@ -139,7 +190,7 @@ export default function ExperimentsView() {
                            <Button key="back" onClick={handleCancel}>
                                Cancel
                            </Button>,
-                           <Button key="start" disabled={!hyperParamsValid} type={'primary'} loading={modalLoading}>
+                           <Button key="start" disabled={!hyperParamsValid || selectedClassifiers.length === 0} type={'primary'} loading={modalLoading} onClick={onStartExperiment}>
                                Start
                            </Button>
                        ]}
@@ -150,6 +201,31 @@ export default function ExperimentsView() {
                             wrapperCol={{span: 16}}
                             layout="horizontal"
                         >
+                            <Form.Item label="Dataset">
+                                <Select placeholder={'Pick a dataset'}
+                                        value={dataConfig.datasetId}
+                                        onChange={handleDatasetChange}
+                                >
+                                    {datasets.map(dataset => (
+                                        <Select.Option key={dataset.id} value={dataset.id}>{dataset.name}</Select.Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                            <Form.Item label={'Validation split'}>
+                                <InputNumber value={dataConfig.validationSplit}
+                                             onChange={(newValue) => setDataConfig(prevState => ({...prevState, validationSplit: newValue}))}/>
+                            </Form.Item>
+                            <Form.Item label={'Test split'}>
+                                <InputNumber value={dataConfig.testSplit}
+                                             onChange={(newValue) => setDataConfig(prevState => ({...prevState, testSplit: newValue}))}/>
+                            </Form.Item>
+                            <Form.Item label={'Seed'}>
+                                <InputNumber value={dataConfig.seed}
+                                             onChange={(newValue) => setDataConfig(prevState => ({...prevState, seed: newValue}))}/>
+                            </Form.Item>
+                            <Form.Item label={'Description'}>
+                                <TextArea rows={4} value={description} onChange={event => setDescription(event.target.value)}/>
+                            </Form.Item>
                             <Form.Item label="Classifiers">
                                 <Select mode={'multiple'}
                                         placeholder={'Pick a classifier'}
@@ -165,9 +241,11 @@ export default function ExperimentsView() {
                                 </Select>
                             </Form.Item>
                         </Form>
+                        <div hidden={selectedClassifiers.length === 0} style={{height: "200px", overflowY: "scroll", scrollBehavior: "smooth"}}>
                         {selectedClassifiers.map(classifierKey => (
                             <HyperParameterForm onFieldChange={handleHyperParamChange} values={hyperParamValues} classifier={classifierMap.get(classifierKey) as Classifier}/>
                         ))}
+                        </div>
                     </Spin>
                 </Modal>
                 <Table
@@ -178,6 +256,11 @@ export default function ExperimentsView() {
                             title: 'Date',
                             dataIndex: 'date',
                             render: (_, record) => <Link to={`/experiments/${record.id}`}>{new Date(record.date).toLocaleString()}</Link>
+                        },
+                        {
+                            title: 'Description',
+                            dataIndex: 'description',
+                            render: (_, record) => record.description
                         },
                         {
                             title: 'Classifiers',
