@@ -16,11 +16,14 @@ export type ExperimentClassifier = {
     remoteId: string;
     address: string;
     status: string;
-    currentSteps: number;
+    currentStep: number;
     totalSteps: number;
     model: Model;
-    results: {
+    trainResults: {
         [key: string]: number[]
+    }
+    testResults: {
+        [key: string]: number
     }
 }
 export type DataConfig = {

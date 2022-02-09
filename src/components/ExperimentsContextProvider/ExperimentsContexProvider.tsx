@@ -22,7 +22,12 @@ import {
 
 import {GenericPayloadState} from '../../state/common/reducer';
 
-import ExperimentsReducer, {Experiment, ExperimentDTO, initialState} from "../../state/experiments/reducer";
+import ExperimentsReducer, {
+    Experiment,
+    ExperimentClassifier,
+    ExperimentDTO,
+    initialState
+} from "../../state/experiments/reducer";
 import {GenericPayloadActions} from "../../state/common/actions";
 
 type ExperimentContextType = {
@@ -31,9 +36,9 @@ type ExperimentContextType = {
     onFetchOne: (id: string) => void;
     onStart: (experiment: ExperimentDTO) => void;
     onDelete: (id: string) => void;
-    onStop: (id: string) => void;
-    onPause: (id: string) => void;
-    onResume: (id: string) => void;
+    onStop: (id: string, classifiers: ExperimentClassifier[]) => void;
+    onPause: (id: string, classifiers: ExperimentClassifier[]) => void;
+    onResume: (id: string, classifiers: ExperimentClassifier[]) => void;
 }
 
 const missingProviderError = (name: string) => {
@@ -95,19 +100,19 @@ const ExperimentsContextProvider = (props: ExperimentContextProviderProps) => {
 
 }
 
-function buildExperimentOperation(dispatch: Dispatch<GenericPayloadActions<Experiment>>, operation: (id: string) => Promise<Experiment>, operationKey: string) {
+function buildExperimentOperation(dispatch: Dispatch<GenericPayloadActions<Experiment>>, operation: (id: string, classifiers: ExperimentClassifier[]) => Promise<Experiment>, operationKey: string) {
     const conversionMap = new Map<string, OperationConversion>([
         ["pause", {continuous: "Pausing", participle: "paused"}],
         ["resume", {continuous: "Resuming", participle: "resumed"}],
         ["stop", {continuous: "Stopping", participle: "stopped"}]
     ])
-    return async (id: string) => {
+    return async (id: string, classifiers: ExperimentClassifier[]) => {
         const messageKey = `${operationKey}-${id}`;
         try {
             const conversion = conversionMap.get(operationKey)
             const content = conversion ? conversion.continuous : "Updating";
             message.loading({content: `${content}...`, key: messageKey});
-            const updatedExperiment = await operation(id);
+            const updatedExperiment = await operation(id, classifiers);
             message.success({
                 content: `Experiment successfully ${conversion ? conversion.participle : 'updated'}`,
                 key: messageKey

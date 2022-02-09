@@ -1,6 +1,6 @@
 import {apiUrlBuilder, checkResponse} from './common';
 
-import {Experiment, ExperimentDTO} from "../state/experiments/reducer";
+import {Experiment, ExperimentClassifier, ExperimentDTO} from "../state/experiments/reducer";
 import assert from 'assert';
 
 export const API_HOST = process.env.REACT_APP_EXPERIMENT_SERVICE_API_HOST;
@@ -41,26 +41,30 @@ export const startExperiment = async (experiment: ExperimentDTO): Promise<Experi
     return await getSingleExperiment(data['id']);
 }
 
-const updateExperiment = async (id: string, action: string): Promise<Experiment> => {
+const updateExperiment = async (id: string, action: string, classifiers: ExperimentClassifier[]): Promise<Experiment> => {
     const endpoint = getApiUrl(`experiment/${action}/${id}`);
     const response = await fetch(endpoint, {
-        method: 'PUT'
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(classifiers)
     });
     checkResponse(response);
     const data = await response.json();
     return await getSingleExperiment(data['id']);
 }
 
-export const pauseExperiment = async (id: string) : Promise<Experiment> => {
-    return await updateExperiment(id, "pause");
+export const pauseExperiment = async (id: string, classifiers: ExperimentClassifier[]) : Promise<Experiment> => {
+    return await updateExperiment(id, "pause", classifiers);
 }
 
-export const resumeExperiment = async (id: string) : Promise<Experiment> => {
-    return await updateExperiment(id, "resume");
+export const resumeExperiment = async (id: string, classifiers: ExperimentClassifier[]) : Promise<Experiment> => {
+    return await updateExperiment(id, "resume", classifiers);
 }
 
-export const stopExperiment = async (id: string) : Promise<Experiment> => {
-    return await updateExperiment(id, "stop");
+export const stopExperiment = async (id: string, classifiers: ExperimentClassifier[]) : Promise<Experiment> => {
+    return await updateExperiment(id, "stop", classifiers);
 }
 
 export const deleteExperiment = async (id: string): Promise<void> => {
@@ -70,6 +74,21 @@ export const deleteExperiment = async (id: string): Promise<void> => {
     });
     checkResponse(response);
     return await response.json();
+}
+
+export const getStatusColor = (status: string): string => {
+    const colorMap = new Map<string, string>([
+        ["FINISH", "#87d068"],
+        ["PAUSE", "#2db7f5"],
+        ["TRAIN", "#108ee9"],
+        ["EVAL", "#108ee9"],
+        ["STOP", "#C70039"],
+        ["ERROR", "#C70039"]
+    ])
+
+    const DEFAULT_COLOR = "#108ee9"
+
+    return colorMap.has(status) ? colorMap.get(status) as string : DEFAULT_COLOR;
 }
 
 

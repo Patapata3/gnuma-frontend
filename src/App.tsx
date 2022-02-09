@@ -13,9 +13,11 @@ import DatasetDetailsView from './views/DatasetDetailsView';
 import DocumentsView from './views/DocumentsView';
 import DocumentDetailsView from './views/DocumentDetailsView';
 import ExperimentsView from "./views/ExperimentsView";
+import ExperimentResultsView from "./views/ExperimentResultsView";
 
 import 'antd/dist/antd.css';
 import './App.css';
+import '../node_modules/react-vis/dist/style.css';
 import HomeView from './views/HomeView';
 import DatasetsContextProvider from './components/DatasetsContextProvider/DatasetsContextProvider';
 import DocumentsContextProvider from './components/DocumentsContextProvider/DocumentsContextProvider';
@@ -93,6 +95,9 @@ function App() {
                             <DocumentsView key='documents-view'/>
                         </Route>
 
+                        <Route exact path='/experiments/:id/'>
+                            <ExperimentResultsView key='experiment-results'/>
+                        </Route>
                         <Route exact path='/experiments/'>
                             <ExperimentsView key='experiments-view'/>
                         </Route>
