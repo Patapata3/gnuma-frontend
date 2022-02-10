@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 
 import {useHistory, useParams} from 'react-router-dom';
 import {ExperimentsContext} from "../components/ExperimentsContextProvider/ExperimentsContexProvider";
-import {Button, Card, Col, Collapse, PageHeader, Progress, Row, Skeleton, Spin, Tag} from "antd";
+import {Button, Card, Col, Collapse, Divider, PageHeader, Progress, Row, Skeleton, Space, Spin, Table, Tag} from "antd";
 import {Experiment, ExperimentClassifier} from "../state/experiments/reducer";
 import {getStatusColor} from "../service/experimentService";
 import {PauseCircleOutlined, PauseOutlined, PlayCircleOutlined, StopOutlined} from "@ant-design/icons";
@@ -29,9 +29,26 @@ export default function ExperimentResultsView() {
         console.log('UseEffect')
         experimentContext.onFetchOne(id);
         setLoading(false);
+        refresh();
     },[id]);
 
     const experiment = experimentContext.state.elements[id];
+
+    const refresh = async () => {
+        console.log('refresh start');
+        while (!experimentContext.state.elements[id]) {
+            await sleep(100);
+        }
+        while (experimentContext.state.elements[id].classifiers.filter(classifier => !['FINISH', 'STOP', 'ERROR'].includes(classifier.status)).length > 0) {
+            console.log('refresh');
+            await sleep(10000);
+            experimentContext.onFetchOne(id);
+        }
+    }
+
+    const sleep = (ms: number) => {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     const renderTitle = () => {
         if (!experiment) {
@@ -90,8 +107,8 @@ export default function ExperimentResultsView() {
     }
 
     const getProgressStatus = (classifier: ExperimentClassifier) => {
-        if (classifier.status === 'FINISHED') {
-            return "success";
+        if (classifier.status === 'FINISH') {
+            return 'success';
         }
         if (classifier.status === 'ERROR' || classifier.status === 'STOP') {
             return "exception";
@@ -137,9 +154,20 @@ export default function ExperimentResultsView() {
         if (!experiment) {
             return (<Spin/>)
         }
-        const metrics = new Set(experiment.classifiers.flatMap(classifier => Object.keys(classifier.trainResults)));
-        const metricRows: string[][] = divideObjectsForGrid(Array.from(metrics), 3);
+        const trainMetrics = new Set(experiment.classifiers.flatMap(classifier => Object.keys(classifier.trainResults)));
+        const testMetrics = new Set(experiment.classifiers.flatMap(classifier => Object.keys(classifier.testResults)));
+        const metricRows: string[][] = divideObjectsForGrid(Array.from(trainMetrics), 3);
 
+        return (
+            <Space direction={"vertical"} style={{width: "100%"}}>
+                {renderGraphs(metricRows)}
+                <Divider>Last results</Divider>
+                {renderTables(trainMetrics, testMetrics)}
+            </Space>
+        )
+    }
+
+    const renderGraphs = (metricRows: string[][]) => {
         return (
             metricRows.map(metricRow => (
                 <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
@@ -151,6 +179,64 @@ export default function ExperimentResultsView() {
                 </Row>
             ))
         )
+    }
+
+    const renderTables = (trainMetrics: Set<string>, testMetrics: Set<string>) => {
+        return (
+            <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
+                {trainMetrics.size > 0 &&
+                <Col xs={6} sm={8} md={9} lg={12}>
+                    <Card title='Training results'>
+                        <Table dataSource={experiment.classifiers} loading={experimentContext.state.loading}
+                               columns={[{
+                                   title: 'Classifier',
+                                   dataIndex: 'Classifier',
+                                   render: (_: any, record: ExperimentClassifier) => record.remoteId
+                               }].concat(
+                                   Array.from(trainMetrics).map(metric => {
+                                       return {
+                                           title: metric,
+                                           dataIndex: metric,
+                                           render: (_, record: ExperimentClassifier) => getTrainingResult(record, metric)
+                                       }
+                                   }))
+                               }
+                        >
+                        </Table>
+                    </Card>
+                </Col>
+                }
+                {testMetrics.size > 0 &&
+                <Col xs={6} sm={8} md={9} lg={12}>
+                    <Card title='Test results'>
+                        <Table dataSource={experiment.classifiers} loading={experimentContext.state.loading}
+                               columns={[{
+                                   title: 'Classifier',
+                                   dataIndex: 'Classifier',
+                                   render: (_: any, record: ExperimentClassifier) => record.remoteId
+                               }].concat(
+                                   Array.from(testMetrics).map(metric => {
+                                       return {
+                                           title: metric,
+                                           dataIndex: metric,
+                                           render: (_, record: ExperimentClassifier) => getTestResult(record, metric)
+                                       }
+                                   }))
+                               }>
+                        </Table>
+                    </Card>
+                </Col>
+                }
+            </Row>
+        )
+    }
+
+    const getTrainingResult = (classifier: ExperimentClassifier, metric: string) => {
+        return classifier.trainResults[metric] ? classifier.trainResults[metric][classifier.trainResults[metric].length - 1].toString() : '';
+    }
+
+    const getTestResult = (classifier: ExperimentClassifier, metric: string) => {
+        return classifier.testResults[metric] ? classifier.testResults[metric].toString() : '';
     }
 
     const renderMetric = (metric: string) => {

@@ -27,7 +27,8 @@ export type ExperimentClassifier = {
     }
 }
 export type DataConfig = {
-    id?: string,
+    id?: string;
+    name: string;
     datasetId: string;
     testSplit: number;
     validationSplit: number;

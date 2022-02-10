@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 
 import {Link} from 'react-router-dom';
 import {Alert, Button, Card, Form, InputNumber, List, message, Modal, Popconfirm, Select, Spin, Table, Tag} from 'antd';
-import {DeleteOutlined, EditOutlined, PlusOutlined} from '@ant-design/icons';
+import {DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined} from '@ant-design/icons';
 
 import {Experiment, ExperimentClassifier, ExperimentClassifierDTO} from "../state/experiments/reducer";
 import HyperParameterForm from "../components/HyperParameterForm/HyperParameterForm";
@@ -12,10 +12,12 @@ import {ClassifiersContext} from "../components/ClassifiersContextProvider/Class
 import {Classifier, HyperParameter} from "../state/classifiers/reducer";
 import {DatasetsContext} from "../components/DatasetsContextProvider/DatasetsContextProvider";
 import TextArea from "antd/es/input/TextArea";
+import {Dataset} from "../state/datasets/reducer";
 
 export default function ExperimentsView() {
     const defaultDataConfig = {
         datasetId: '',
+        name: '',
         validationSplit: 0,
         testSplit: 0,
         seed: 0
@@ -64,7 +66,7 @@ export default function ExperimentsView() {
                 <Link to={`/experiments/${experiment.id}`}>
                     <Button
                         type={'text'}
-                        icon={<EditOutlined/>}
+                        icon={<SearchOutlined/>}
                     />
                 </Link>
                 <Popconfirm
@@ -85,6 +87,7 @@ export default function ExperimentsView() {
     const classifiers = Object.values(classifierContext.state.elements);
     const classifierMap = new Map(classifiers.map(classifier => [`${classifier.id} at ${classifier.address}`, classifier] as [string, Classifier]));
     const datasets = Object.values(datasetContext.state.elements);
+    const datasetMap = new Map(datasets.map(dataset => [`${dataset.id}`, dataset] as [string, Dataset]));
 
     const chooseTagColor = (status: string) => {
         return colorMap.has(status) ? colorMap.get(status) : DEFAULT_COLOR;
@@ -115,7 +118,8 @@ export default function ExperimentsView() {
     }
 
     const handleDatasetChange = (selectedDataset: string) => {
-        setDataConfig(prevState => ({...prevState, datasetId: selectedDataset}));
+        const selectedDatasetObject = datasetMap.get(selectedDataset) as Dataset
+        setDataConfig(prevState => ({...prevState, datasetId: selectedDataset, name: selectedDatasetObject.name}));
     }
 
     const handleSelect = (selectedClassifier: string) => {
@@ -261,6 +265,26 @@ export default function ExperimentsView() {
                             title: 'Description',
                             dataIndex: 'description',
                             render: (_, record) => record.description
+                        },
+                        {
+                            title: 'Dataset',
+                            dataIndex: 'dataset',
+                            render: (_, record) => record.data.name
+                        },
+                        {
+                            title: 'Validation split',
+                            dataIndex: 'validationSplit',
+                            render: (_, record) => record.data.validationSplit
+                        },
+                        {
+                            title: 'Test split',
+                            dataIndex: 'testSplit',
+                            render: (_, record) => record.data.testSplit
+                        },
+                        {
+                            title: 'Seed',
+                            dataIndex: 'seed',
+                            render: (_, record) => record.data.seed
                         },
                         {
                             title: 'Classifiers',
