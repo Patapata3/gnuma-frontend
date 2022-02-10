@@ -247,7 +247,7 @@ export default function ExperimentResultsView() {
             .trainResults[metric].length
         return (
             <Card title={metric} bodyStyle={{textAlign: "center"}}>
-                <XYPlot width={300} height={300} onMouseLeave={() => setCrossHairValues((prevState => {
+                <XYPlot width={320} height={320} onMouseLeave={() => setCrossHairValues((prevState => {
                     return {...prevState, [metric]: []}
                 }))}
                 >
@@ -260,8 +260,8 @@ export default function ExperimentResultsView() {
                         <LineSeries onNearestX={(datapoint) => fillCrossHair(metric, datapoint.x - 1)} data={formData(classifier.trainResults[metric])}/>
                     ))}
                     <Crosshair values={crosshairValues[metric]} titleFormat={formatTitle} itemsFormat={items => formatItems(metric, items)}/>
-                    <DiscreteColorLegend items={experiment.classifiers.filter(classifier => !!classifier.trainResults[metric]).map(classifier => classifier.remoteId)}/>
                 </XYPlot>
+                <DiscreteColorLegend orientation={"horizontal"} items={experiment.classifiers.filter(classifier => !!classifier.trainResults[metric]).map(classifier => classifier.remoteId)}/>
             </Card>
         )
     }
@@ -277,12 +277,12 @@ export default function ExperimentResultsView() {
     const formatItems = (metric: string, items: LineSeriesPoint[]) => {
         const relevantClassifiers = experiment.classifiers.filter(classifier => classifier.trainResults[metric])
         return items.map((item, i) => {
-            return {title: relevantClassifiers[i].remoteId, value: item.y}
+            return {title: relevantClassifiers[i].remoteId, value: item ? item.y : ""}
         })
     }
 
     const formatTitle = (items: any) => {
-        return {title: 'Step', value: items[0].x}
+        return {title: 'Step', value: items[0] ? items[0].x : ""}
     }
 
     const formData = (results: number[]) => {
