@@ -21,16 +21,28 @@ export const getAllDatasets = async (): Promise<Dataset[]> => {
 }
 
 export const removeDocumentsFromDataset = async (dataset: Dataset, ...documents: string[]): Promise<Dataset> => {
-    const filteredDocuments = dataset.documents.filter((documentId) => !documents.includes(documentId))
+    const filteredDocuments = dataset.data.folds[0].train.filter((documentId) => !documents.includes(documentId))
     const changes = {
-        documents: filteredDocuments
+        data: {
+            folds: [
+                {
+                    train: filteredDocuments
+                }
+            ]
+        }
     };
     return await updateDataset(dataset.id, changes);
 }
 
 export const addDocumentsToDataset = async (dataset: Dataset, ...addDocuments: string[]): Promise<Dataset> => {
     const changes = {
-        documents: [...dataset.documents, ...addDocuments]
+        data: {
+            folds: [
+                {
+                    train: [...dataset.data.folds[0].train, ...addDocuments]
+                }
+            ]
+        }
     };
     return await updateDataset(dataset.id, changes);
 }

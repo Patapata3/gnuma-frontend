@@ -31,7 +31,7 @@ export default function DatasetDetailsView() {
     useEffect(() => {
         setDescription(dataset?.description);
         if(dataset) {
-            documentContext.onFetchSome(dataset.documents);
+            documentContext.onFetchSome(dataset.data.folds[0].train);
         }
     }, [dataset]);
 
@@ -51,7 +51,7 @@ export default function DatasetDetailsView() {
     }
 
     const renderDocumentList = () => {
-        const documents: { id: string }[] = dataset?.documents.map(d => {
+        const documents: { id: string }[] = dataset?.data.folds[0].train.map(d => {
             return {id: d};
         });
 

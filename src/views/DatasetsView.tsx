@@ -76,7 +76,7 @@ export default function DatasetsView() {
                         {
                             title: 'Documents',
                             dataIndex: '',
-                            render: (_, record) => record.documents.length
+                            render: (_, record) => record.data.folds.map(fold => fold.train ? fold.train.length : 0).reduce((previousValue, currentValue) => previousValue + currentValue)
                         },
                         {
                             title: '',
