@@ -6,8 +6,8 @@ export const checkResponse = (response: Response) => {
     }
 }
 
-export const apiUrlBuilder = (apiHost: string, apiPort: string | number, apiBase: string, apiVersion: string) => {
+export const apiUrlBuilder = (apiHost: string, apiBase: string, apiVersion: string) => {
     return (endpoint: string) => {
-        return `${apiHost}:${apiPort}/${apiBase}/${apiVersion}/${endpoint}`;
+        return `${apiHost}/${apiBase}/${apiVersion}/${endpoint}`;
     }
 }

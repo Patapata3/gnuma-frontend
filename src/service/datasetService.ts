@@ -4,16 +4,14 @@ import {apiUrlBuilder, checkResponse} from './common';
 import {Dataset} from '../state/datasets/reducer';
 
 export const API_HOST = process.env.REACT_APP_DATASET_SERVICE_API_HOST;
-export const API_PORT = process.env.REACT_APP_DATASET_SERVICE_API_PORT;
 export const API_BASE = process.env.REACT_APP_DATASET_SERVICE_API_BASE;
 export const API_VERSION = process.env.REACT_APP_DATASET_SERVICE_API_VERSION;
 
 assert(API_HOST);
-assert(API_PORT);
 assert(API_BASE);
 assert(API_VERSION);
 
-const getApiUrl = apiUrlBuilder(API_HOST, API_PORT, API_BASE, API_VERSION);
+const getApiUrl = apiUrlBuilder(API_HOST, API_BASE, API_VERSION);
 
 
 export const getAllDatasets = async (): Promise<Dataset[]> => {
