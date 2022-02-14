@@ -9,7 +9,9 @@ export type HyperParameter = {
     type: string,
     optional: boolean,
     defaultValue: string,
-    valueList: string[]
+    valueList: string[],
+    lowerBound: number,
+    upperBound: number
 }
 
 export type Classifier = {
