@@ -58,6 +58,8 @@ export default function HyperParameterForm (props: HyperParameterFormProps) {
                 value={values.get(key) as string}
                 onChange={(newValue: string) => handleChange(key, newValue)}
                 style={{width: '100%'}}
+                min={String(param.lowerBound === 0 || param.lowerBound ? param.lowerBound : Number.MIN_SAFE_INTEGER)}
+                max={String(param.upperBound === 0 || param.upperBound ? param.upperBound : Number.MAX_SAFE_INTEGER)}
                 precision={param.type === "INTEGER" ? 0 : undefined}
                 defaultValue={param.defaultValue}/>
         )
