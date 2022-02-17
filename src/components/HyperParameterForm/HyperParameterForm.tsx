@@ -20,7 +20,7 @@ export default function HyperParameterForm (props: HyperParameterFormProps) {
     }
 
     const checkAllValuesFilled = () => {
-        return !props.classifier.hyperParameters.filter(param => !param.optional && values.get(param.key) !== '0' && !values.get(param.key)).length
+        return !props.classifier.hyperParameters.filter(param => !param.optional && values.get(param.key) !== false && String(values.get(param.key)) !== '0' && !values.get(param.key)).length
     }
 
     const renderSelect = (param: HyperParameter) => {
