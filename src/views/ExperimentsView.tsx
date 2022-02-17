@@ -127,7 +127,11 @@ export default function ExperimentsView() {
         if (!classifier) {
             return;
         }
-        setHyperParamValues(hyperParamValues.set(classifier.address, createHyperParamsMap(classifier)))
+
+        const hyperParamsMap = createHyperParamsMap(classifier);
+        setHyperParamValues(hyperParamValues.set(classifier.address, hyperParamsMap))
+        setHyperParamsValid(!classifier.hyperParameters
+            .filter(param => !param.optional && String(hyperParamsMap.get(param.key)) !== '0' && hyperParamsMap.get(param.key) !== false && !hyperParamsMap.get(param.key)).length)
     }
 
     const createHyperParamsMap = (classifier: Classifier) => {
@@ -140,6 +144,7 @@ export default function ExperimentsView() {
 
     const handleHyperParamChange = (address: string, values: Map<string, string | boolean>, isValid: boolean) => {
         setHyperParamValues(new Map(hyperParamValues).set(address, values));
+        console.log(isValid);
         setHyperParamsValid(isValid);
     }
 
