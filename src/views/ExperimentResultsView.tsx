@@ -127,7 +127,7 @@ export default function ExperimentResultsView() {
                   loading={loading}
                   bodyStyle={{textAlign: "center"}}
             >
-                <Progress type="circle" percent={classifier.currentStep && classifier.totalSteps ? classifier.currentStep / classifier.totalSteps * 100 : 0}
+                <Progress type="circle" percent={classifier.currentStep && classifier.totalSteps ? +(classifier.currentStep / classifier.totalSteps * 100).toFixed(2) : 0}
                           format={percent => renderProgressCircle(percent as number, classifier)}
                           status={getProgressStatus(classifier)}/>
                 <div>
@@ -239,6 +239,15 @@ export default function ExperimentResultsView() {
         return classifier.testResults[metric] ? classifier.testResults[metric].toString() : '';
     }
 
+    const formXValues = (maxResult: number) => {
+        const values: number[] = [];
+        let value: number;
+        for (value = 1; value <= maxResult + 1; value += Math.ceil(maxResult / 5)) {
+            values.push(value);
+        }
+        return values
+    }
+
     const renderMetric = (metric: string) => {
         const relevantClassifiers = experiment.classifiers.filter(classifier => classifier.trainResults[metric]);
         const maxLength = relevantClassifiers
@@ -253,7 +262,7 @@ export default function ExperimentResultsView() {
                 >
                     <HorizontalGridLines/>
                     <VerticalGridLines/>
-                    <XAxis title={'Step'} tickValues={Array.from(Array(maxLength + 1).keys())} tickFormat={value => value}
+                    <XAxis title={'Step'} tickValues={formXValues(maxLength + 1)} tickFormat={value => value}
                     />
                     <YAxis title={metric}/>
                     {experiment.classifiers.filter(classifier => !!classifier.trainResults[metric]).map((classifier) => (
