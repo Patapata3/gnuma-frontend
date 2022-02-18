@@ -262,7 +262,7 @@ export default function ExperimentResultsView() {
                 >
                     <HorizontalGridLines/>
                     <VerticalGridLines/>
-                    <XAxis title={'Step'} tickValues={formXValues(maxLength + 1)} tickFormat={value => value}
+                    <XAxis title={'Update'} tickValues={formXValues(maxLength + 1)} tickFormat={value => value}
                     />
                     <YAxis title={metric}/>
                     {experiment.classifiers.filter(classifier => !!classifier.trainResults[metric]).map((classifier) => (
@@ -291,7 +291,8 @@ export default function ExperimentResultsView() {
     }
 
     const formatTitle = (items: any) => {
-        return {title: 'Step', value: items[0] ? items[0].x : ""}
+        const item = items.find((item: { x: any; }) => !!item.x)
+        return {title: 'Update', value: item ? item.x : ""}
     }
 
     const formData = (results: number[]) => {
