@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 
 import {useHistory, useParams} from 'react-router-dom';
 import {ExperimentsContext} from "../components/ExperimentsContextProvider/ExperimentsContexProvider";
@@ -16,6 +16,8 @@ import {
     XYPlot,
     YAxis
 } from "react-vis";
+import {setInterval} from "timers";
+import {clearInterval} from "timers";
 
 export default function ExperimentResultsView() {
     const experimentContext = useContext(ExperimentsContext);
@@ -24,31 +26,25 @@ export default function ExperimentResultsView() {
 
     const {id} = useParams<{ id: string }>();
     const history = useHistory();
+    let interval: NodeJS.Timeout;
 
     useEffect(() => {
-        console.log('UseEffect')
+        console.log('UseEffect');
+        console.log(interval);
         experimentContext.onFetchOne(id);
         setLoading(false);
-        refresh();
-    },[id]);
+        interval = setInterval(() => {
+            console.log('refresh');
+            experimentContext.onFetchOne(id);
+        }, 5000);
+        console.log(interval);
+        return () => {
+            clearInterval(interval);
+            console.log('clear');
+        }
+    },[]);
 
     const experiment = experimentContext.state.elements[id];
-
-    const refresh = async () => {
-        console.log('refresh start');
-        while (!experimentContext.state.elements[id]) {
-            await sleep(100);
-        }
-        while (experimentContext.state.elements[id].classifiers.filter(classifier => !['FINISH', 'STOP', 'ERROR'].includes(classifier.status)).length > 0) {
-            console.log('refresh');
-            await sleep(10000);
-            experimentContext.onFetchOne(id);
-        }
-    }
-
-    const sleep = (ms: number) => {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
 
     const renderTitle = () => {
         if (!experiment) {
@@ -307,7 +303,9 @@ export default function ExperimentResultsView() {
     return (
         <div key={'experiment-results'}>
             <PageHeader
-                onBack={() => history.push('/experiments')}
+                onBack={() =>  {
+                    history.push('/experiments');
+                }}
                 title={renderTitle()}
             />
             <Collapse defaultActiveKey={['1', '2']} ghost>
