@@ -228,11 +228,11 @@ export default function ExperimentResultsView() {
     }
 
     const getTrainingResult = (classifier: ExperimentClassifier, metric: string) => {
-        return classifier.trainResults[metric] ? classifier.trainResults[metric][classifier.trainResults[metric].length - 1].toString() : '';
+        return classifier.trainResults[metric] ? classifier.trainResults[metric][classifier.trainResults[metric].length - 1].toFixed(3).toString() : '';
     }
 
     const getTestResult = (classifier: ExperimentClassifier, metric: string) => {
-        return classifier.testResults[metric] ? classifier.testResults[metric].toString() : '';
+        return classifier.testResults[metric] ? classifier.testResults[metric].toFixed(3).toString() : '';
     }
 
     const formXValues = (maxResult: number) => {
@@ -282,7 +282,7 @@ export default function ExperimentResultsView() {
     const formatItems = (metric: string, items: LineSeriesPoint[]) => {
         const relevantClassifiers = experiment.classifiers.filter(classifier => classifier.trainResults[metric])
         return items.map((item, i) => {
-            return {title: relevantClassifiers[i].remoteId, value: item ? item.y : ""}
+            return {title: relevantClassifiers[i].remoteId, value: item ? item.y.toFixed(3) : ""}
         })
     }
 
