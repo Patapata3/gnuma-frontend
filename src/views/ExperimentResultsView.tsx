@@ -288,7 +288,7 @@ export default function ExperimentResultsView() {
                     />
                     <YAxis title={metric}/>
                     {experiment.classifiers.filter(classifier => !!classifier.trainResults[metric]).map((classifier) => (
-                        <LineSeries onNearestX={(datapoint) => fillCrossHair(metric, datapoint.x - 1)} data={formData(classifier.trainResults[metric])}/>
+                        <LineSeries onNearestX={isLongestSeries(classifier, metric) ? (datapoint) => fillCrossHair(metric, datapoint.x - 1) : undefined} data={formData(classifier.trainResults[metric])}/>
                     ))}
                     <Crosshair values={crosshairValues[metric]} titleFormat={formatTitle} itemsFormat={items => formatItems(metric, items)}/>
                 </XYPlot>
@@ -305,6 +305,12 @@ export default function ExperimentResultsView() {
         })
     }
 
+    const isLongestSeries = (classifier: ExperimentClassifier, metric: string) => {
+        const longestClassifier = experiment.classifiers.reduce((previousValue, currentValue) =>
+            previousValue.trainResults[metric].length > currentValue.trainResults[metric].length ? previousValue : currentValue)
+        return longestClassifier.address === classifier.address;
+    }
+
     const formatItems = (metric: string, items: LineSeriesPoint[]) => {
         const relevantClassifiers = experiment.classifiers.filter(classifier => classifier.trainResults[metric])
         return items.map((item, i) => {
@@ -313,7 +319,7 @@ export default function ExperimentResultsView() {
     }
 
     const formatTitle = (items: any) => {
-        const item = items.find((item: { x: any; }) => !!item.x)
+        const item = items.find((item: { x: any; }) => !!item && !!item.x)
         return {title: 'Update', value: item ? item.x : ""}
     }
 
