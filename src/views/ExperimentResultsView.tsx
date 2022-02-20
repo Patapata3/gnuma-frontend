@@ -2,7 +2,22 @@ import React, {useContext, useEffect, useRef, useState} from 'react';
 
 import {useHistory, useParams} from 'react-router-dom';
 import {ExperimentsContext} from "../components/ExperimentsContextProvider/ExperimentsContexProvider";
-import {Button, Card, Col, Collapse, Divider, PageHeader, Progress, Row, Skeleton, Space, Spin, Table, Tag} from "antd";
+import {
+    Button,
+    Card,
+    Col,
+    Collapse,
+    Divider, Form,
+    PageHeader,
+    Progress,
+    Row,
+    Skeleton,
+    Slider,
+    Space,
+    Spin,
+    Table,
+    Tag
+} from "antd";
 import {Experiment, ExperimentClassifier} from "../state/experiments/reducer";
 import {getStatusColor} from "../service/experimentService";
 import {PauseCircleOutlined, PauseOutlined, PlayCircleOutlined, StopOutlined} from "@ant-design/icons";
@@ -23,6 +38,7 @@ export default function ExperimentResultsView() {
     const experimentContext = useContext(ExperimentsContext);
     const [loading, setLoading] = useState(true);
     const [crosshairValues, setCrossHairValues] = useState({} as {[key: string]: {x: number, y: number}[]});
+    const [numPrecision, setNumPrecision] = useState(3);
 
     const {id} = useParams<{ id: string }>();
     const history = useHistory();
@@ -156,6 +172,14 @@ export default function ExperimentResultsView() {
 
         return (
             <Space direction={"vertical"} style={{width: "100%"}}>
+                <Form labelCol={{span: 1.5}}
+                      labelAlign={'left'}
+                      wrapperCol={{span: 6}}
+                      layout="horizontal">
+                    <Form.Item label={'Precision'}>
+                        <Slider min={1} max={10} value={numPrecision} onChange={setNumPrecision}/>
+                    </Form.Item>
+                </Form>
                 {renderGraphs(metricRows)}
                 <Divider>Last results</Divider>
                 {renderTables(trainMetrics, testMetrics)}
@@ -230,11 +254,11 @@ export default function ExperimentResultsView() {
     }
 
     const getTrainingResult = (classifier: ExperimentClassifier, metric: string) => {
-        return classifier.trainResults[metric] ? (+(classifier.trainResults[metric][classifier.trainResults[metric].length - 1]).toFixed(6)).toString() : '';
+        return classifier.trainResults[metric] ? (+(classifier.trainResults[metric][classifier.trainResults[metric].length - 1]).toFixed(numPrecision)).toString() : '';
     }
 
     const getTestResult = (classifier: ExperimentClassifier, metric: string) => {
-        return classifier.testResults[metric] ? (+(classifier.testResults[metric]).toFixed(6)).toString() : '';
+        return classifier.testResults[metric] ? (+(classifier.testResults[metric]).toFixed(numPrecision)).toString() : '';
     }
 
     const formXValues = (maxResult: number) => {
@@ -284,7 +308,7 @@ export default function ExperimentResultsView() {
     const formatItems = (metric: string, items: LineSeriesPoint[]) => {
         const relevantClassifiers = experiment.classifiers.filter(classifier => classifier.trainResults[metric])
         return items.map((item, i) => {
-            return {title: relevantClassifiers[i].remoteId, value: item ? +(item.y).toFixed(6) : ""}
+            return {title: relevantClassifiers[i].remoteId, value: item ? +(item.y).toFixed(numPrecision) : ""}
         })
     }
 
